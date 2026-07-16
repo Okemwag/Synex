@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="synex_paper">#F2F2F0</color>
+    <color name="synex_ink">#11120F</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
