@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.synex.core.data.SynexRepository
 import com.synex.core.model.PortfolioSummary
 import com.synex.core.ui.ErrorState
+import com.synex.core.ui.ActionState
 import com.synex.core.ui.LoadingState
 import com.synex.core.ui.PageHeading
 import com.synex.core.ui.SectionHeading
@@ -23,15 +24,21 @@ import com.synex.core.ui.SynexPaper
 @Composable
 fun PortfolioRoute(
     repository: SynexRepository,
+    onAccount: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PortfolioViewModel = viewModel(factory = PortfolioViewModel.factory(repository)),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    PortfolioScreen(state, viewModel::refresh, modifier)
+    PortfolioScreen(state, viewModel::refresh, onAccount, modifier)
 }
 
 @Composable
-fun PortfolioScreen(state: PortfolioUiState, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+fun PortfolioScreen(
+    state: PortfolioUiState,
+    onRetry: () -> Unit,
+    onAccount: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize().background(SynexPaper),
         contentPadding = PaddingValues(20.dp),
@@ -40,6 +47,14 @@ fun PortfolioScreen(state: PortfolioUiState, onRetry: () -> Unit, modifier: Modi
         item { PageHeading("Your live exposure", "Portfolio") }
         when {
             state.isLoading -> item { LoadingState() }
+            state.requiresDerivAccount -> item {
+                ActionState(
+                    title = "Connect your Deriv account",
+                    message = "Your positions and portfolio will appear here after an account is linked.",
+                    actionLabel = "Connect Deriv account",
+                    onAction = onAccount,
+                )
+            }
             state.errorMessage != null -> item { ErrorState(state.errorMessage, onRetry) }
             state.portfolio != null -> portfolioContent(state.portfolio)
         }

@@ -18,24 +18,94 @@ class AccountViewModel(private val repository: SynexRepository) : ViewModel() {
     init { refresh() }
 
     fun refresh() {
+        loadAccounts(afterDerivAuthorization = false)
+    }
+
+    fun connectDeriv() {
         viewModelScope.launch {
-            _state.value = AccountUiState(isLoading = true)
-            _state.value = runCatching { repository.accounts() }.fold(
-                onSuccess = {
-                    AccountUiState(
-                        isLoading = false,
-                        accounts = it,
-                        selectedLoginId = repository.activeLoginId.value,
-                    )
+            _state.update {
+                it.copy(
+                    isConnecting = true,
+                    connectionMessage = null,
+                    errorMessage = null,
+                )
+            }
+            runCatching { repository.derivConnectUrl() }.fold(
+                onSuccess = { url ->
+                    _state.update { it.copy(isConnecting = false, connectionUrl = url) }
                 },
-                onFailure = { AccountUiState(isLoading = false, errorMessage = it.customerMessage("load your accounts")) },
+                onFailure = { error ->
+                    _state.update {
+                        it.copy(
+                            isConnecting = false,
+                            connectionMessage = error.customerMessage("start the Deriv connection"),
+                        )
+                    }
+                },
             )
+        }
+    }
+
+    fun onBrowserOpened() {
+        _state.update {
+            it.copy(
+                connectionUrl = null,
+                waitingForConnection = true,
+                connectionMessage = "Finish connecting in Deriv, then return to Synex. If the final browser page does not load, return here anyway.",
+            )
+        }
+    }
+
+    fun onBrowserLaunchFailed() {
+        _state.update {
+            it.copy(
+                connectionUrl = null,
+                waitingForConnection = false,
+                connectionMessage = "We couldn't open Deriv. Check that a browser is installed and try again.",
+            )
+        }
+    }
+
+    fun onAppResumed() {
+        if (_state.value.waitingForConnection) {
+            loadAccounts(afterDerivAuthorization = true)
         }
     }
 
     fun selectAccount(loginId: String) {
         repository.selectAccount(loginId)
         _state.update { it.copy(selectedLoginId = loginId) }
+    }
+
+    private fun loadAccounts(afterDerivAuthorization: Boolean) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            runCatching { repository.accounts() }.fold(
+                onSuccess = { accounts ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            accounts = accounts,
+                            selectedLoginId = repository.activeLoginId.value,
+                            waitingForConnection = afterDerivAuthorization && accounts.isEmpty(),
+                            connectionMessage = when {
+                                !afterDerivAuthorization -> it.connectionMessage
+                                accounts.isNotEmpty() -> "Deriv account connected successfully."
+                                else -> "No linked account was found yet. Finish the Deriv authorization, then return and try again."
+                            },
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = error.customerMessage("load your accounts"),
+                        )
+                    }
+                },
+            )
+        }
     }
 
     companion object {

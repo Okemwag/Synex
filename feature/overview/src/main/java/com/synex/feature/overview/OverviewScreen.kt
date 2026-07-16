@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.synex.core.data.SynexRepository
 import com.synex.core.model.OverviewSnapshot
 import com.synex.core.ui.ErrorState
+import com.synex.core.ui.ActionState
 import com.synex.core.ui.LoadingState
 import com.synex.core.ui.MarketRow
 import com.synex.core.ui.PageHeading
@@ -54,6 +55,14 @@ fun OverviewScreen(
         item { PageHeading("Portfolio overview", "Account overview") }
         when {
             state.isLoading -> item { LoadingState() }
+            state.requiresDerivAccount -> item {
+                ActionState(
+                    title = "Connect your Deriv account",
+                    message = "Link a Deriv demo or live account to see balances, positions, and trading activity.",
+                    actionLabel = "Connect Deriv account",
+                    onAction = onAccount,
+                )
+            }
             state.errorMessage != null -> item { ErrorState(state.errorMessage, onRetry) }
             state.snapshot != null -> overviewContent(state.snapshot, onMarkets, onPortfolio, onAccount)
         }

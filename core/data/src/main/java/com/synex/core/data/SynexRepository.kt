@@ -14,7 +14,12 @@ interface SynexRepository {
     suspend fun markets(): List<MarketQuote>
     suspend fun portfolio(): PortfolioSummary
     suspend fun accounts(): List<TradingAccount>
+    suspend fun derivConnectUrl(): String
     suspend fun onboardingStatus(): OnboardingStatus
     suspend fun acknowledgeRisk(disclosureVersion: String)
     fun selectAccount(loginId: String)
 }
+
+class DerivAccountRequiredException : IllegalStateException(
+    "No Deriv trading account is linked to this Synex profile.",
+)

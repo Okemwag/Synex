@@ -11,7 +11,7 @@ data class OnboardingStatusDto(
 
 @Serializable
 data class RiskAcknowledgementRequest(
-    val accepted: Boolean = true,
+    val accepted: Boolean,
     @SerialName("disclosure_version") val disclosureVersion: String,
 )
 

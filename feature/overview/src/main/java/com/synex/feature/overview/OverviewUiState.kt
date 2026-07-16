@@ -5,5 +5,6 @@ import com.synex.core.model.OverviewSnapshot
 data class OverviewUiState(
     val isLoading: Boolean = true,
     val snapshot: OverviewSnapshot? = null,
+    val requiresDerivAccount: Boolean = false,
     val errorMessage: String? = null,
 )

@@ -78,7 +78,11 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
                     )
                 }
                 composable(SynexDestination.MARKETS.route) { MarketsRoute(repository) }
-                composable(SynexDestination.PORTFOLIO.route) { PortfolioRoute(repository) }
+                composable(SynexDestination.PORTFOLIO.route) {
+                    PortfolioRoute(repository, onAccount = {
+                        navController.navigate(SynexDestination.ACCOUNT.route)
+                    })
+                }
                 composable(SynexDestination.ACCOUNT.route) {
                     AccountRoute(
                         repository = repository,

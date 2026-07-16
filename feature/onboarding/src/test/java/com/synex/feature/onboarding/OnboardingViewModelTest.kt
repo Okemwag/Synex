@@ -60,4 +60,5 @@ private class FakeRepository(riskAcknowledged: Boolean) : SynexRepository {
     override suspend fun markets(): List<MarketQuote> = error("Not used")
     override suspend fun portfolio(): PortfolioSummary = error("Not used")
     override suspend fun accounts(): List<TradingAccount> = error("Not used")
+    override suspend fun derivConnectUrl(): String = error("Not used")
 }

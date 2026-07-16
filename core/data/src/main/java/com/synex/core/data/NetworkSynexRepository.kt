@@ -45,6 +45,10 @@ class NetworkSynexRepository(
         return accounts
     }
 
+    override suspend fun derivConnectUrl(): String =
+        api.derivConnectUrl().authorizeUrl.takeIf { it.startsWith("https://") }
+            ?: throw IllegalStateException("The Deriv connection URL is unavailable.")
+
     override fun selectAccount(loginId: String) {
         mutableActiveLoginId.value = loginId
     }
@@ -60,7 +64,7 @@ class NetworkSynexRepository(
     private suspend fun activeAccount(): TradingAccount {
         val accounts = accounts()
         return accounts.firstOrNull { it.loginId == mutableActiveLoginId.value }
-            ?: throw IllegalStateException("No Deriv trading account is linked to this Synex profile.")
+            ?: throw DerivAccountRequiredException()
     }
 
     private suspend fun portfolioFor(account: TradingAccount): PortfolioSummary {

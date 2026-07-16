@@ -12,6 +12,7 @@ fun quoted(value: String) = "\"${value.replace("\\", "\\\\").replace("\"", "\\\"
 val configuredAuth0ClientId = authValue("SYNEX_AUTH0_CLIENT_ID").trim()
 val configuredAuth0Domain = authValue("SYNEX_AUTH0_DOMAIN").trim()
 val configuredAuth0Audience = authValue("SYNEX_AUTH0_AUDIENCE").trim()
+val configuredApiBaseUrl = authValue("SYNEX_API_BASE_URL").trim()
 
 android {
     namespace = "com.synex.mobile"
@@ -33,10 +34,11 @@ android {
         debug {
             val domain = configuredAuth0Domain.ifBlank { "dev-5uxh5z65i7cmrxna.us.auth0.com" }
             val audience = configuredAuth0Audience.ifBlank { "https://api.synex.app" }
+            val apiBaseUrl = configuredApiBaseUrl.ifBlank { "http://10.0.2.2:8080" }
             buildConfigField("String", "SYNEX_AUTH0_DOMAIN", quoted(domain))
             buildConfigField("String", "SYNEX_AUTH0_CLIENT_ID", quoted(configuredAuth0ClientId))
             buildConfigField("String", "SYNEX_AUTH0_AUDIENCE", quoted(audience))
-            buildConfigField("String", "SYNEX_API_BASE_URL", "\"http://10.0.2.2:8080\"")
+            buildConfigField("String", "SYNEX_API_BASE_URL", quoted(apiBaseUrl))
             manifestPlaceholders["auth0Domain"] = domain
             manifestPlaceholders["auth0Scheme"] = "https"
             manifestPlaceholders["usesCleartextTraffic"] = "true"

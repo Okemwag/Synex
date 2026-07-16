@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.synex.core.data.SynexRepository
+import com.synex.core.data.DerivAccountRequiredException
 import com.synex.core.ui.customerMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,7 @@ class OverviewViewModel(
                     onFailure = {
                         OverviewUiState(
                             isLoading = false,
+                            requiresDerivAccount = it is DerivAccountRequiredException,
                             errorMessage = it.customerMessage("load your account overview"),
                         )
                     },

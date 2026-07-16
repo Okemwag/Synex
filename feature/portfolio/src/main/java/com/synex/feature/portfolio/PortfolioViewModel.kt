@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.synex.core.data.SynexRepository
+import com.synex.core.data.DerivAccountRequiredException
 import com.synex.core.ui.customerMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +28,13 @@ class PortfolioViewModel(private val repository: SynexRepository) : ViewModel() 
             _state.value = PortfolioUiState(isLoading = true)
             _state.value = runCatching { repository.portfolio() }.fold(
                 onSuccess = { PortfolioUiState(isLoading = false, portfolio = it) },
-                onFailure = { PortfolioUiState(isLoading = false, errorMessage = it.customerMessage("load your portfolio")) },
+                onFailure = {
+                    PortfolioUiState(
+                        isLoading = false,
+                        requiresDerivAccount = it is DerivAccountRequiredException,
+                        errorMessage = it.customerMessage("load your portfolio"),
+                    )
+                },
             )
         }
     }

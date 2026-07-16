@@ -17,6 +17,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import com.synex.core.network.dto.AccountsResponse
 import com.synex.core.network.dto.CandlesResponse
+import com.synex.core.network.dto.DerivConnectUrlResponse
 import com.synex.core.network.dto.PortfolioResponse
 import com.synex.core.network.dto.SymbolsResponse
 import com.synex.core.network.dto.OnboardingStatusDto
@@ -50,13 +51,19 @@ class SynexApiClient private constructor(
     suspend fun portfolio(loginId: String): PortfolioResponse =
         authenticatedGet(ApiRoutes.PORTFOLIO) { parameter("login_id", loginId) }
 
+    suspend fun derivConnectUrl(): DerivConnectUrlResponse =
+        authenticatedGet(ApiRoutes.DERIV_CONNECT_URL)
+
     suspend fun onboardingStatus(): OnboardingStatusDto =
         authenticatedGet(ApiRoutes.ONBOARDING_STATUS)
 
     suspend fun acknowledgeRisk(disclosureVersion: String): RiskAcknowledgementResponse =
         authenticatedPost(
             ApiRoutes.RISK_ACKNOWLEDGEMENT,
-            RiskAcknowledgementRequest(disclosureVersion = disclosureVersion),
+            RiskAcknowledgementRequest(
+                accepted = true,
+                disclosureVersion = disclosureVersion,
+            ),
         )
 
     fun close() = client.close()
