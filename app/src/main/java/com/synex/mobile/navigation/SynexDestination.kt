@@ -1,10 +1,10 @@
 package com.synex.mobile.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.CandlestickChart
-import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.PieChartOutline
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.CandlestickChart
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.PieChart
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class SynexDestination(
@@ -12,8 +12,8 @@ enum class SynexDestination(
     val label: String,
     val icon: ImageVector,
 ) {
-    OVERVIEW("overview", "Overview", Icons.Outlined.GridView),
-    MARKETS("markets", "Markets", Icons.Outlined.CandlestickChart),
-    PORTFOLIO("portfolio", "Portfolio", Icons.Outlined.PieChartOutline),
-    ACCOUNT("account", "Account", Icons.Outlined.AccountCircle),
+    OVERVIEW("overview", "Overview", Icons.Rounded.GridView),
+    MARKETS("markets", "Markets", Icons.Rounded.CandlestickChart),
+    PORTFOLIO("portfolio", "Portfolio", Icons.Rounded.PieChart),
+    ACCOUNT("account", "Account", Icons.Rounded.AccountCircle),
 }

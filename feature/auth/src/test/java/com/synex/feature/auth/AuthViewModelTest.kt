@@ -22,6 +22,6 @@ private class FakeSession(
 ) : AuthSession {
     override fun hasSession() = authenticated
     override suspend fun accessToken() = if (authenticated) "token" else null
-    override fun login(activity: Activity, onResult: (Result<Unit>) -> Unit) = Unit
+    override fun login(activity: Activity, action: AuthAction, onResult: (Result<Unit>) -> Unit) = Unit
     override fun logout(activity: Activity, onResult: (Result<Unit>) -> Unit) = Unit
 }

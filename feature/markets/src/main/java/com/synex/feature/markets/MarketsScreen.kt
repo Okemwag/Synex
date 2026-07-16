@@ -52,7 +52,7 @@ fun MarketsScreen(
         modifier = modifier.fillMaxSize().background(SynexPaper).padding(top = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        PageHeading("Trade global markets", "Markets", Modifier.padding(horizontal = 20.dp))
+        PageHeading("Follow global markets", "Markets", Modifier.padding(horizontal = 20.dp))
         MarketSearch(state.query, onQueryChange)
         CategoryFilters(state.categories, state.category, onCategoryChange)
         when {

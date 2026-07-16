@@ -9,4 +9,12 @@
     </style>
 
     <style name="Theme.Synex" parent="Base.Theme.Synex" />
+
+    <style name="Theme.Synex.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/synex_teal</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/synex_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/synex_teal</item>
+        <item name="windowSplashScreenAnimationDuration">700</item>
+        <item name="postSplashScreenTheme">@style/Theme.Synex</item>
+    </style>
 </resources>

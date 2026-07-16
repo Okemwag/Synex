@@ -19,12 +19,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import com.synex.core.data.SynexRepository
 import com.synex.core.ui.SynexPaper
 import com.synex.core.ui.SynexWordmark
 import com.synex.feature.account.AccountRoute
 import com.synex.feature.markets.MarketsRoute
 import com.synex.feature.legal.LegalRoute
+import com.synex.feature.legal.LegalDocumentRoute
 import com.synex.feature.overview.OverviewRoute
 import com.synex.feature.portfolio.PortfolioRoute
 import com.synex.mobile.navigation.SynexBottomBar
@@ -41,7 +49,7 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { SynexTopBar() },
         bottomBar = {
-            if (currentRoute != AppRoutes.LEGAL) {
+            if (currentRoute?.startsWith("legal") != true) {
                 SynexBottomBar(currentRoute) { destination ->
                     navController.navigate(destination.route) {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -53,7 +61,14 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding).background(SynexPaper)) {
-            NavHost(navController, startDestination = SynexDestination.OVERVIEW.route) {
+            NavHost(
+                navController,
+                startDestination = SynexDestination.OVERVIEW.route,
+                enterTransition = { fadeIn(tween(320)) + slideInHorizontally(tween(360)) { it / 8 } },
+                exitTransition = { fadeOut(tween(180)) + slideOutHorizontally(tween(260)) { -it / 10 } },
+                popEnterTransition = { fadeIn(tween(320)) + slideInHorizontally(tween(360)) { -it / 8 } },
+                popExitTransition = { fadeOut(tween(180)) + slideOutHorizontally(tween(260)) { it / 10 } },
+            ) {
                 composable(SynexDestination.OVERVIEW.route) {
                     OverviewRoute(
                         repository,
@@ -72,7 +87,19 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
                     )
                 }
                 composable(AppRoutes.LEGAL) {
-                    LegalRoute(onBack = { navController.popBackStack() })
+                    LegalRoute(
+                        onBack = { navController.popBackStack() },
+                        onDocument = { navController.navigate(AppRoutes.legalDocument(it)) },
+                    )
+                }
+                composable(
+                    AppRoutes.LEGAL_DOCUMENT,
+                    arguments = listOf(navArgument("documentType") { type = NavType.StringType }),
+                ) { entry ->
+                    LegalDocumentRoute(
+                        documentType = entry.arguments?.getString("documentType").orEmpty(),
+                        onBack = { navController.popBackStack() },
+                    )
                 }
             }
         }

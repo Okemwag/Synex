@@ -36,7 +36,11 @@ internal fun ProfileCard(
                 Column(Modifier.weight(1f)) {
                     Text("Your Synex account", style = MaterialTheme.typography.titleLarge)
                     Text(
-                        if (account?.isVirtual == true) "Demo trading" else "Live trading",
+                        when {
+                            account == null -> "No Deriv account connected"
+                            account.isVirtual -> "Demo trading"
+                            else -> "Live trading"
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = SynexGreen,
                     )

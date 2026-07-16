@@ -5,6 +5,7 @@ import com.synex.core.model.OverviewSnapshot
 import com.synex.core.model.PortfolioSummary
 import com.synex.core.model.Position
 import com.synex.core.model.TradingAccount
+import com.synex.core.model.OnboardingStatus
 import com.synex.core.network.SynexApiClient
 import com.synex.core.data.mapper.toDomain
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,6 +47,14 @@ class NetworkSynexRepository(
 
     override fun selectAccount(loginId: String) {
         mutableActiveLoginId.value = loginId
+    }
+
+    override suspend fun onboardingStatus(): OnboardingStatus = api.onboardingStatus().let {
+        OnboardingStatus(it.riskAcknowledged, it.disclosureVersion)
+    }
+
+    override suspend fun acknowledgeRisk(disclosureVersion: String) {
+        check(api.acknowledgeRisk(disclosureVersion).accepted)
     }
 
     private suspend fun activeAccount(): TradingAccount {

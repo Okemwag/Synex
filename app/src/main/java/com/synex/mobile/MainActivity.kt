@@ -5,13 +5,27 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import android.view.animation.DecelerateInterpolator
 import com.synex.core.ui.SynexTheme
 import com.synex.mobile.di.AppContainer
 import com.synex.feature.auth.AuthGate
+import com.synex.feature.onboarding.OnboardingGate
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        splashScreen.setOnExitAnimationListener { provider ->
+            provider.iconView.animate()
+                .alpha(0f)
+                .scaleX(1.08f)
+                .scaleY(1.08f)
+                .setDuration(320L)
+                .setInterpolator(DecelerateInterpolator())
+                .withEndAction(provider::remove)
+                .start()
+        }
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
 
@@ -28,7 +42,9 @@ class MainActivity : ComponentActivity() {
                 AuthGate(
                     session = container.authSession,
                     authenticatedContent = { onLogout ->
-                        SynexApp(container.repository, onLogout)
+                        OnboardingGate(container.repository) {
+                            SynexApp(container.repository, onLogout)
+                        }
                     },
                 )
             }

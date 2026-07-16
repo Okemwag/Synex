@@ -22,11 +22,13 @@ Synex is the mobile trading client for the Synex platform. It gives customers a 
 ## Features
 
 - **Secure sign-in** — Auth0 Universal Login using Authorization Code with PKCE. Credentials are encrypted at rest by Auth0's `SecureCredentialsManager` with Android Keystore-backed protection; Synex never sees or stores passwords.
-- **Overview** — total equity, available cash, performance chart, quick actions, and a market watchlist.
+- **Guided first visit** — branded splash, sign-in, plain-language legal introduction, privacy overview, and a server-recorded risk acknowledgement before the dashboard opens. Returning customers skip completed steps.
+- **Overview** — account-backed equity, available cash, open P/L, working navigation, and a market watchlist.
 - **Markets** — searchable, category-filtered catalogue of instruments (forex, crypto, commodities, derived indices).
 - **Portfolio** — net equity, profit/loss, and open-position detail for the connected trading account.
-- **Account** — profile and balance, security and notification preferences, money-movement boundaries, and sign-out.
-- **Legal centre** — in-app access to the Synex privacy notice, platform terms, trading risk disclosure, AML policy, complaints procedure, and data-rights documentation.
+- **Account** — live/demo identification, connected-account selection, balance, legal access, and sign-out.
+- **Legal centre** — policies and disclosures open inside Synex, with guarded navigation that stays on the Synex domain.
+- **Motion and navigation** — calm page transitions, animated selection states, smooth scrolling, and a premium icon treatment shared across the app.
 
 ## Architecture
 
@@ -40,16 +42,17 @@ app ──► feature:* ──► core:data ──► core:network ──► Syn
 
 | Module | Responsibility |
 | --- | --- |
-| `app` | Composition root, build configuration, `MainActivity`, auth gate, bottom-tab navigation |
+| `app` | Composition root, branded launcher/splash, build configuration, journey gates, bottom-tab navigation |
 | `core:model` | Platform-neutral domain models (accounts, markets, candles, positions, portfolio) |
 | `core:network` | Ktor HTTP client, API routes, and JSON transport DTOs for the Go API |
 | `core:data` | `SynexRepository` contract, network-backed implementation, DTO→domain mappers |
-| `core:ui` | Design system: colors, typography, cards, rows, charts, loading and error states |
+| `core:ui` | Shared visual foundation: colors, typography, cards, rows, loading and error states |
 | `feature:auth` | Auth0 Universal Login, PKCE session state, encrypted credentials, auth gate |
-| `feature:overview` | Equity, performance, quick actions, and watchlist |
+| `feature:onboarding` | First-visit legal journey, privacy overview, and versioned risk acknowledgement |
+| `feature:overview` | Verified account equity, working navigation, and watchlist |
 | `feature:markets` | Market catalogue with search and category filters |
 | `feature:portfolio` | Portfolio summary and open positions |
-| `feature:account` | Profile, preferences, funding boundaries, legal entry point |
+| `feature:account` | Account selection, live/demo status, sign-out, and legal entry point |
 | `feature:legal` | Legal centre listing policy and disclosure documents |
 
 Dependency injection is manual: `app/.../di/AppContainer.kt` is the composition root, and constructor injection keeps the object graph explicit without a framework. Transport DTOs live in `core/network/.../dto/`, DTO→domain mappers in `core/data/.../mapper/`, API paths and request defaults in `core/network/Constants.kt`.
@@ -97,6 +100,10 @@ E1:84:09:D1:36:F3:3C:94:A6:55:69:63:08:16:B4:7B:03:23:E0:47:6F:AA:8B:B1:3F:C7:47
 
 The tenant also needs the API user-access grant and the refresh-token grant enabled for this application.
 
+Debug builds can use the documented development domain and audience defaults. Release
+builds have no tenant fallback and `preReleaseBuild` fails unless all three Auth0
+properties are explicitly supplied.
+
 ### API endpoints
 
 API base URLs are fixed per build type in `app/build.gradle.kts`. All builds use `NetworkSynexRepository`.
@@ -118,7 +125,7 @@ API base URLs are fixed per build type in `app/build.gradle.kts`. All builds use
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
-The app launches into the authentication gate; after Auth0 sign-in, the session's access token is attached as a bearer token to all authenticated API calls.
+The app opens with the supplied Synex launcher artwork and branded splash. After sign-in, first-time customers move through the legal, privacy, and risk journey before reaching the dashboard. Returning customers with the current risk acknowledgement go straight to the dashboard.
 
 ## Testing
 
@@ -140,6 +147,8 @@ The client consumes the following Synex Go API routes:
 | `GET /v1/markets/candles?symbol&granularity&count` | public | Chart history |
 | `GET /v1/accounts` | bearer | Connected Deriv trading accounts |
 | `GET /v1/portfolio?login_id` | bearer | Open contracts for an account |
+| `GET /v1/onboarding/status` | bearer | Current onboarding and disclosure status |
+| `POST /v1/onboarding/risk-acknowledgement` | bearer | Store the current risk acknowledgement with its audit evidence |
 
 The Go backend is the trusted boundary for Deriv tokens, risk controls, trade audit, and account ownership. **No Deriv token, Auth0 client secret, or payment credential is ever embedded in this app.**
 
@@ -148,9 +157,12 @@ The Go backend is the trusted boundary for Deriv tokens, risk controls, trade au
 - **Authentication:** Authorization Code with PKCE via Auth0 Universal Login; no client secret ships in the APK.
 - **Credential storage:** Auth0 `SecureCredentialsManager` encrypts access and refresh credentials with Android Keystore-backed protection, refreshes expiring access tokens, and clears them on logout.
 - **Transport:** HTTPS only in release builds; cleartext is permitted solely for the local emulator backend in debug builds.
+- **Screen privacy:** `FLAG_SECURE` blocks screenshots and display capture throughout authenticated app content.
+- **Backup:** Android backup and device transfer are disabled so encrypted Auth0 preferences are never restored without their originating Keystore keys.
+- **Release build:** R8 minification and resource shrinking are enabled, and missing production Auth0 configuration fails the build.
 - **Trust boundary:** the mobile client is untrusted. All broker credentials, order controls, and money movement live behind the Go API.
 
-Planned hardening before public release: R8 minification, certificate pinning, `FLAG_SECURE` on financial screens, refined backup and data-extraction rules, and Play Integrity checks ahead of enabling payments.
+Planned hardening before public release: certificate pinning with an approved rotation policy and Play Integrity checks ahead of enabling payments.
 
 ## Compliance and legal
 
@@ -163,18 +175,19 @@ Synex is a financial product in development. Before public launch:
 This client deliberately excludes trading execution and payments until the corresponding regulatory, suitability, and risk-control work is approved:
 
 1. **Order ticket and execution** — proposal, buy, sell, limits, and live position streams will be added to the repository only after the feature UX and suitability/risk checks are approved.
-2. **Deposits and withdrawals** — the future payment gateway will connect behind backend-issued payment intents and verified webhooks. The current account UI labels this boundary.
+2. **Deposits and withdrawals** — the future payment gateway will connect behind backend-issued payment intents and verified webhooks. Funding controls stay hidden until that flow is real.
 
 ## Roadmap
 
 - [x] Auth0 sign-in with secure credential storage
 - [x] Markets, portfolio, overview, and account read flows
 - [x] In-app legal centre
-- [ ] Versioned acceptance of terms and risk disclosures at onboarding
-- [ ] Live/demo account distinction and account switching
+- [x] Versioned risk disclosure acknowledgement at onboarding
+- [ ] Versioned platform-terms acceptance after the final terms are approved
+- [x] Live/demo account distinction and account switching
 - [ ] Order ticket and execution
 - [ ] Deposits and withdrawals via backend-issued payment intents
-- [ ] Release hardening (R8, certificate pinning, `FLAG_SECURE`, Play Integrity)
+- [ ] Complete release hardening (certificate pinning and Play Integrity remain)
 - [ ] Localization and full string externalization
 
 ---

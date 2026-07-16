@@ -28,13 +28,16 @@ class Auth0Session(
         manager?.awaitCredentials()?.accessToken?.takeIf(String::isNotBlank)
     }.getOrNull()
 
-    override fun login(activity: Activity, onResult: (Result<Unit>) -> Unit) {
+    override fun login(activity: Activity, action: AuthAction, onResult: (Result<Unit>) -> Unit) {
         val auth0 = account ?: return onResult(Result.failure(configurationError()))
-        WebAuthProvider.login(auth0)
+        val provider = WebAuthProvider.login(auth0)
             .withScheme(AuthConstants.SCHEME)
             .withAudience(audience)
             .withScope(AuthConstants.SCOPES)
-            .start(activity, authCallback(onResult))
+        if (action == AuthAction.CREATE_ACCOUNT) {
+            provider.withParameters(mapOf("screen_hint" to "signup"))
+        }
+        provider.start(activity, authCallback(onResult))
     }
 
     override fun logout(activity: Activity, onResult: (Result<Unit>) -> Unit) {

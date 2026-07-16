@@ -5,16 +5,16 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/synex_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/synex_logo"
         android:supportsRtl="true"
         android:usesCleartextTraffic="${usesCleartextTraffic}"
         android:theme="@style/Theme.Synex">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.Synex">
+            android:theme="@style/Theme.Synex.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

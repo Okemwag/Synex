@@ -13,7 +13,10 @@ class AuthViewModel(private val session: AuthSession) : ViewModel() {
     )
     val state: StateFlow<AuthUiState> = mutableState.asStateFlow()
 
-    fun login(activity: Activity) = runAuth("sign you in") { session.login(activity, it) }
+    fun login(activity: Activity, action: AuthAction) =
+        runAuth(if (action == AuthAction.SIGN_IN) "sign you in" else "create your account") {
+            session.login(activity, action, it)
+        }
 
     fun logout(activity: Activity) = runAuth("sign you out") { session.logout(activity, it) }
 

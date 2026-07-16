@@ -1,14 +1,10 @@
 package com.synex.feature.account
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.Icon
@@ -20,8 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.synex.core.ui.SynexCard
-import com.synex.core.ui.SynexGreen
-import com.synex.core.ui.SynexGreenSoft
+import com.synex.core.ui.PremiumIcon
 import com.synex.core.ui.SynexMuted
 
 data class SettingItem(
@@ -47,9 +42,7 @@ private fun SettingsRow(item: SettingItem) {
         rowModifier.padding(horizontal = 16.dp, vertical = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(38.dp).background(SynexGreenSoft, CircleShape), Alignment.Center) {
-            Icon(item.icon, null, Modifier.size(18.dp), tint = SynexGreen)
-        }
+        PremiumIcon(item.icon, null)
         Column(Modifier.padding(start = 12.dp).weight(1f)) {
             Text(item.title, style = MaterialTheme.typography.titleMedium)
             Text(item.detail, style = MaterialTheme.typography.bodyMedium, color = SynexMuted)

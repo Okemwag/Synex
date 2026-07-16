@@ -5,6 +5,11 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,10 +22,16 @@ fun AuthGate(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val activity = LocalContext.current.findActivity()
-    if (state.authenticated) {
-        authenticatedContent { viewModel.logout(activity) }
-    } else {
-        AuthScreen(state, onLogin = { activity?.let(viewModel::login) })
+    AnimatedContent(
+        targetState = state.authenticated,
+        transitionSpec = { fadeIn(tween(450)) togetherWith fadeOut(tween(260)) },
+        label = "account access",
+    ) { authenticated ->
+        if (authenticated) {
+            authenticatedContent { activity?.let(viewModel::logout) }
+        } else {
+            AuthScreen(state) { action -> activity?.let { viewModel.login(it, action) } }
+        }
     }
 }
 
