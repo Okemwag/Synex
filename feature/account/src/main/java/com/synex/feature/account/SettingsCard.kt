@@ -54,6 +54,6 @@ private fun SettingsRow(item: SettingItem) {
             Text(item.title, style = MaterialTheme.typography.titleMedium)
             Text(item.detail, style = MaterialTheme.typography.bodyMedium, color = SynexMuted)
         }
-        Icon(Icons.Outlined.ChevronRight, null, tint = SynexMuted)
+        if (item.onClick != null) Icon(Icons.Outlined.ChevronRight, null, tint = SynexMuted)
     }
 }

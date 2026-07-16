@@ -13,17 +13,17 @@ class AuthViewModel(private val session: AuthSession) : ViewModel() {
     )
     val state: StateFlow<AuthUiState> = mutableState.asStateFlow()
 
-    fun login(activity: Activity) = runAuth { session.login(activity, it) }
+    fun login(activity: Activity) = runAuth("sign you in") { session.login(activity, it) }
 
-    fun logout(activity: Activity) = runAuth { session.logout(activity, it) }
+    fun logout(activity: Activity) = runAuth("sign you out") { session.logout(activity, it) }
 
-    private fun runAuth(action: ((Result<Unit>) -> Unit) -> Unit) {
+    private fun runAuth(failureAction: String, action: ((Result<Unit>) -> Unit) -> Unit) {
         mutableState.value = mutableState.value.copy(isLoading = true, errorMessage = null)
         action { result ->
             mutableState.value = mutableState.value.copy(
                 authenticated = session.hasSession(),
                 isLoading = false,
-                errorMessage = result.exceptionOrNull()?.message,
+                errorMessage = result.exceptionOrNull()?.let { "We couldn't $failureAction. Please try again." },
             )
         }
     }

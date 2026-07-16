@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ChangePill(changePercent: Double, modifier: Modifier = Modifier) {
-    val positive = changePercent >= 0
+    val safeChange = changePercent.takeIf(Double::isFinite) ?: 0.0
+    val positive = safeChange >= 0
     val color = if (positive) SynexGreen else SynexRed
     Row(
         modifier = modifier.clip(CircleShape).background(color.copy(alpha = 0.13f))
@@ -29,7 +30,7 @@ fun ChangePill(changePercent: Double, modifier: Modifier = Modifier) {
     ) {
         Icon(Icons.Outlined.ArrowOutward, null, Modifier.size(12.dp), tint = color)
         Text(
-            text = "${if (positive) "+" else ""}${"%.2f".format(changePercent)}%",
+            text = "${if (positive) "+" else ""}${"%.2f".format(safeChange)}%",
             style = MaterialTheme.typography.labelMedium,
             color = color,
         )

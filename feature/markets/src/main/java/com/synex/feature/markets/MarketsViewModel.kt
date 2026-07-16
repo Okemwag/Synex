@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.synex.core.data.SynexRepository
+import com.synex.core.ui.customerMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +28,7 @@ class MarketsViewModel(private val repository: SynexRepository) : ViewModel() {
                 .onSuccess { markets -> _state.update { it.copy(isLoading = false, markets = markets) } }
                 .onFailure { error ->
                     _state.update {
-                        it.copy(isLoading = false, errorMessage = error.message ?: "Unable to load markets.")
+                        it.copy(isLoading = false, errorMessage = error.customerMessage("load markets"))
                     }
                 }
         }

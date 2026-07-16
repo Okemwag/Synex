@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.synex.core.data.SynexRepository
+import com.synex.core.ui.customerMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 class OverviewViewModel(
@@ -15,7 +17,12 @@ class OverviewViewModel(
     private val _state = MutableStateFlow(OverviewUiState())
     val state: StateFlow<OverviewUiState> = _state.asStateFlow()
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            repository.activeLoginId.drop(1).collect { refresh() }
+        }
+    }
 
     fun refresh() {
         viewModelScope.launch {
@@ -26,7 +33,7 @@ class OverviewViewModel(
                     onFailure = {
                         OverviewUiState(
                             isLoading = false,
-                            errorMessage = it.message ?: "An unexpected error occurred.",
+                            errorMessage = it.customerMessage("load your account overview"),
                         )
                     },
                 )

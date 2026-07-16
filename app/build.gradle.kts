@@ -9,6 +9,10 @@ fun authValue(name: String, fallback: String = "") =
 
 fun quoted(value: String) = "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
+val configuredAuth0ClientId = authValue("SYNEX_AUTH0_CLIENT_ID").trim()
+val configuredAuth0Domain = authValue("SYNEX_AUTH0_DOMAIN").trim()
+val configuredAuth0Audience = authValue("SYNEX_AUTH0_AUDIENCE").trim()
+
 android {
     namespace = "com.synex.mobile"
     compileSdk {
@@ -23,22 +27,29 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        val auth0Domain = authValue("SYNEX_AUTH0_DOMAIN", "dev-5uxh5z65i7cmrxna.us.auth0.com")
-        buildConfigField("String", "SYNEX_AUTH0_DOMAIN", quoted(auth0Domain))
-        buildConfigField("String", "SYNEX_AUTH0_CLIENT_ID", quoted(authValue("SYNEX_AUTH0_CLIENT_ID")))
-        buildConfigField("String", "SYNEX_AUTH0_AUDIENCE", quoted(authValue("SYNEX_AUTH0_AUDIENCE", "https://api.synex.app")))
-        manifestPlaceholders["auth0Domain"] = auth0Domain
-        manifestPlaceholders["auth0Scheme"] = "https"
     }
 
     buildTypes {
         debug {
+            val domain = configuredAuth0Domain.ifBlank { "dev-5uxh5z65i7cmrxna.us.auth0.com" }
+            val audience = configuredAuth0Audience.ifBlank { "https://api.synex.app" }
+            buildConfigField("String", "SYNEX_AUTH0_DOMAIN", quoted(domain))
+            buildConfigField("String", "SYNEX_AUTH0_CLIENT_ID", quoted(configuredAuth0ClientId))
+            buildConfigField("String", "SYNEX_AUTH0_AUDIENCE", quoted(audience))
             buildConfigField("String", "SYNEX_API_BASE_URL", "\"http://10.0.2.2:8080\"")
+            manifestPlaceholders["auth0Domain"] = domain
+            manifestPlaceholders["auth0Scheme"] = "https"
             manifestPlaceholders["usesCleartextTraffic"] = "true"
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            buildConfigField("String", "SYNEX_AUTH0_DOMAIN", quoted(configuredAuth0Domain))
+            buildConfigField("String", "SYNEX_AUTH0_CLIENT_ID", quoted(configuredAuth0ClientId))
+            buildConfigField("String", "SYNEX_AUTH0_AUDIENCE", quoted(configuredAuth0Audience))
             buildConfigField("String", "SYNEX_API_BASE_URL", "\"https://api.synex.app\"")
+            manifestPlaceholders["auth0Domain"] = configuredAuth0Domain
+            manifestPlaceholders["auth0Scheme"] = "https"
             manifestPlaceholders["usesCleartextTraffic"] = "false"
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -56,6 +67,19 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    doFirst {
+        val missing = listOf(
+            "SYNEX_AUTH0_CLIENT_ID" to configuredAuth0ClientId,
+            "SYNEX_AUTH0_DOMAIN" to configuredAuth0Domain,
+            "SYNEX_AUTH0_AUDIENCE" to configuredAuth0Audience,
+        ).filter { it.second.isBlank() }.map { it.first }
+        check(missing.isEmpty()) {
+            "Release authentication is not configured. Missing: ${missing.joinToString()}"
+        }
     }
 }
 
