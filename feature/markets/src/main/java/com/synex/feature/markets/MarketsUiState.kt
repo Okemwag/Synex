@@ -1,5 +1,6 @@
 package com.synex.feature.markets
 
+import com.synex.core.model.Candle
 import com.synex.core.model.MarketQuote
 
 data class MarketsUiState(
@@ -8,6 +9,10 @@ data class MarketsUiState(
     val query: String = "",
     val category: String = "All",
     val errorMessage: String? = null,
+    val selectedMarket: MarketQuote? = null,
+    val candles: List<Candle> = emptyList(),
+    val isHistoryLoading: Boolean = false,
+    val historyErrorMessage: String? = null,
 ) {
     val categories get() = listOf("All") + markets.map(MarketQuote::market).distinct()
 

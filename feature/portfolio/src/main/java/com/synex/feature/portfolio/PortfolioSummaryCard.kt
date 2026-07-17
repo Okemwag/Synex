@@ -25,13 +25,18 @@ internal fun PortfolioSummaryCard(portfolio: PortfolioSummary) {
             Column {
                 SummaryLabel("NET EQUITY")
                 Spacer(Modifier.height(6.dp))
-                Text(formatMoney(portfolio.equity, portfolio.currency), style = MaterialTheme.typography.displaySmall)
+                Text(
+                    portfolio.equity?.let { formatMoney(it, portfolio.currency) } ?: "Unavailable",
+                    style = MaterialTheme.typography.displaySmall,
+                )
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 SummaryMetric("Available", formatMoney(portfolio.availableCash, portfolio.currency))
                 SummaryMetric(
                     "Total P/L",
-                    "${if (portfolio.profitLoss >= 0) "+" else ""}${formatMoney(portfolio.profitLoss, portfolio.currency)}",
+                    portfolio.profitLoss?.let {
+                        "${if (it >= 0) "+" else ""}${formatMoney(it, portfolio.currency)}"
+                    } ?: "Unavailable",
                     Alignment.End,
                 )
             }

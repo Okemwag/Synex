@@ -60,14 +60,21 @@ internal fun PositionCard(position: Position) {
 
 @Composable
 private fun PositionValue(position: Position) {
-    val positive = position.profitLoss >= 0
     Column(horizontalAlignment = Alignment.End) {
-        Text(formatMoney(position.currentValue, position.currency), style = MaterialTheme.typography.titleMedium)
-        Text(
-            "${if (positive) "+" else ""}${formatMoney(position.profitLoss, position.currency)}",
-            style = MaterialTheme.typography.labelMedium,
-            color = if (positive) SynexGreen else SynexRed,
-        )
+        val currentValue = position.currentValue
+        val profitLoss = position.profitLoss
+        if (currentValue != null && profitLoss != null) {
+            val positive = profitLoss >= 0
+            Text(formatMoney(currentValue, position.currency), style = MaterialTheme.typography.titleMedium)
+            Text(
+                "${if (positive) "+" else ""}${formatMoney(profitLoss, position.currency)}",
+                style = MaterialTheme.typography.labelMedium,
+                color = if (positive) SynexGreen else SynexRed,
+            )
+        } else {
+            Text(formatMoney(position.buyPrice, position.currency), style = MaterialTheme.typography.titleMedium)
+            Text("Purchase price", style = MaterialTheme.typography.labelMedium, color = SynexMuted)
+        }
     }
 }
 

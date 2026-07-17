@@ -9,9 +9,9 @@ internal fun MarketSymbolDto.toDomain() = MarketQuote(
     symbol = symbol,
     displayName = displayName.ifBlank { symbol },
     market = market,
-    price = quote,
-    changePercent = changePercent,
-    isOpen = exchangeIsOpen == 1,
+    price = null,
+    changePercent = null,
+    isOpen = exchangeIsOpen == 1 && isTradingSuspended == 0,
 )
 
 internal fun CandleDto.toDomain() = Candle(

@@ -13,6 +13,10 @@ val configuredAuth0ClientId = authValue("SYNEX_AUTH0_CLIENT_ID").trim()
 val configuredAuth0Domain = authValue("SYNEX_AUTH0_DOMAIN").trim()
 val configuredAuth0Audience = authValue("SYNEX_AUTH0_AUDIENCE").trim()
 val configuredApiBaseUrl = authValue("SYNEX_API_BASE_URL").trim()
+val configuredReleaseApiBaseUrl = authValue(
+    "SYNEX_RELEASE_API_BASE_URL",
+    "https://synex-backend.onrender.com",
+).trim()
 
 android {
     namespace = "com.synex.mobile"
@@ -49,7 +53,7 @@ android {
             buildConfigField("String", "SYNEX_AUTH0_DOMAIN", quoted(configuredAuth0Domain))
             buildConfigField("String", "SYNEX_AUTH0_CLIENT_ID", quoted(configuredAuth0ClientId))
             buildConfigField("String", "SYNEX_AUTH0_AUDIENCE", quoted(configuredAuth0Audience))
-            buildConfigField("String", "SYNEX_API_BASE_URL", "\"https://api.synex.app\"")
+            buildConfigField("String", "SYNEX_API_BASE_URL", quoted(configuredReleaseApiBaseUrl))
             manifestPlaceholders["auth0Domain"] = configuredAuth0Domain
             manifestPlaceholders["auth0Scheme"] = "https"
             manifestPlaceholders["usesCleartextTraffic"] = "false"
@@ -81,6 +85,9 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
         ).filter { it.second.isBlank() }.map { it.first }
         check(missing.isEmpty()) {
             "Release authentication is not configured. Missing: ${missing.joinToString()}"
+        }
+        check(configuredReleaseApiBaseUrl.startsWith("https://")) {
+            "SYNEX_RELEASE_API_BASE_URL must use HTTPS."
         }
     }
 }

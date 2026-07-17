@@ -7,4 +7,5 @@ data class PortfolioUiState(
     val portfolio: PortfolioSummary? = null,
     val requiresDerivAccount: Boolean = false,
     val errorMessage: String? = null,
+    val liveStatus: String = "connecting",
 )

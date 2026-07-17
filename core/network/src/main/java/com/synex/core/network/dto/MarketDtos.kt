@@ -10,15 +10,15 @@ data class SymbolsResponse(
 
 @Serializable
 data class MarketSymbolDto(
+    @SerialName("underlying_symbol")
     val symbol: String = "",
-    @SerialName("display_name")
+    @SerialName("underlying_symbol_name")
     val displayName: String = "",
     val market: String = "",
-    val quote: Double = 0.0,
-    @SerialName("change_percent")
-    val changePercent: Double = 0.0,
-    @SerialName("exchange_is_open") 
+    @SerialName("exchange_is_open")
     val exchangeIsOpen: Int = 1,
+    @SerialName("is_trading_suspended")
+    val isTradingSuspended: Int = 0,
 )
 
 @Serializable

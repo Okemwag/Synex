@@ -16,12 +16,13 @@ data class PortfolioDto(
 @Serializable
 data class PositionDto(
     @SerialName("contract_id") val contractId: Long = 0,
+    @SerialName("underlying_symbol")
     val symbol: String = "",
-    @SerialName("display_name") val displayName: String = "",
+    val longcode: String = "",
     @SerialName("contract_type") val contractType: String = "CALL",
     @SerialName("buy_price") val buyPrice: Double = 0.0,
-    @SerialName("bid_price") val bidPrice: Double = 0.0,
-    val profit: Double = 0.0,
+    val payout: Double = 0.0,
     val currency: String = "USD",
     @SerialName("purchase_time") val purchaseTime: Long = 0,
+    @SerialName("expiry_time") val expiryTime: Long = 0,
 )

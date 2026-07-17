@@ -11,7 +11,9 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.parameter
+import io.ktor.client.request.prepareGet
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -23,7 +25,18 @@ import com.synex.core.network.dto.SymbolsResponse
 import com.synex.core.network.dto.OnboardingStatusDto
 import com.synex.core.network.dto.RiskAcknowledgementRequest
 import com.synex.core.network.dto.RiskAcknowledgementResponse
+import com.synex.core.network.dto.AccountStreamEventDto
+import com.synex.core.network.dto.AccountStreamTicketRequest
+import com.synex.core.network.dto.AccountStreamTicketResponse
+import io.ktor.utils.io.readUTF8Line
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 
 class SynexApiClient private constructor(
     private val tokenProvider: AccessTokenProvider,
@@ -51,8 +64,44 @@ class SynexApiClient private constructor(
     suspend fun portfolio(loginId: String): PortfolioResponse =
         authenticatedGet(ApiRoutes.PORTFOLIO) { parameter("login_id", loginId) }
 
+    fun accountStream(loginId: String): Flow<AccountStreamEventDto> = flow {
+        while (currentCoroutineContext().isActive) {
+            try {
+                val ticket = authenticatedPost<AccountStreamTicketResponse, AccountStreamTicketRequest>(
+                    ApiRoutes.ACCOUNT_STREAM_TICKET,
+                    AccountStreamTicketRequest(loginId),
+                ).ticket
+                if (ticket.isBlank()) throw IllegalStateException("The live account stream is unavailable.")
+
+                client.prepareGet(ApiRoutes.ACCOUNT_STREAM) {
+                    parameter("ticket", ticket)
+                    accept(ContentType.Text.EventStream)
+                }.execute { response ->
+                    val channel = response.bodyAsChannel()
+                    while (!channel.isClosedForRead && currentCoroutineContext().isActive) {
+                        val line = channel.readUTF8Line() ?: break
+                        if (!line.startsWith("data:")) continue
+                        val payload = line.removePrefix("data:").trim()
+                        if (payload.isEmpty()) continue
+                        runCatching { streamJson.decodeFromString<AccountStreamEventDto>(payload) }
+                            .getOrNull()
+                            ?.let { emit(it) }
+                    }
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                emit(AccountStreamEventDto(type = "status", status = "reconnecting", loginId = loginId))
+            }
+
+            if (currentCoroutineContext().isActive) delay(3_000)
+        }
+    }
+
     suspend fun derivConnectUrl(): DerivConnectUrlResponse =
-        authenticatedGet(ApiRoutes.DERIV_CONNECT_URL)
+        authenticatedGet(ApiRoutes.DERIV_CONNECT_URL) {
+            parameter("return_to", ANDROID_DERIV_RETURN_URL)
+        }
 
     suspend fun onboardingStatus(): OnboardingStatusDto =
         authenticatedGet(ApiRoutes.ONBOARDING_STATUS)
@@ -94,6 +143,9 @@ class SynexApiClient private constructor(
     }
 
     companion object {
+        private const val ANDROID_DERIV_RETURN_URL = "synex://deriv-connect"
+        private val streamJson = Json { ignoreUnknownKeys = true }
+
         private fun defaultHttpClient(baseUrl: String): HttpClient = HttpClient(OkHttp) {
             expectSuccess = true
             install(ContentNegotiation) {

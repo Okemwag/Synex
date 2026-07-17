@@ -35,6 +35,8 @@ fun MarketsRoute(
         state,
         viewModel::setQuery,
         viewModel::setCategory,
+        viewModel::selectMarket,
+        viewModel::closeMarketHistory,
         viewModel::refresh,
         modifier,
     )
@@ -45,6 +47,8 @@ fun MarketsScreen(
     state: MarketsUiState,
     onQueryChange: (String) -> Unit,
     onCategoryChange: (String) -> Unit,
+    onMarketSelected: (com.synex.core.model.MarketQuote) -> Unit,
+    onHistoryClosed: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -58,13 +62,17 @@ fun MarketsScreen(
         when {
             state.isLoading -> LoadingState(Modifier.padding(horizontal = 20.dp))
             state.errorMessage != null -> ErrorState(state.errorMessage, onRetry, Modifier.padding(horizontal = 20.dp))
-            else -> MarketList(state)
+            else -> MarketList(state, onMarketSelected, onHistoryClosed)
         }
     }
 }
 
 @Composable
-private fun MarketList(state: MarketsUiState) {
+private fun MarketList(
+    state: MarketsUiState,
+    onMarketSelected: (com.synex.core.model.MarketQuote) -> Unit,
+    onHistoryClosed: () -> Unit,
+) {
     LazyColumn(contentPadding = PaddingValues(horizontal = 20.dp, vertical = 2.dp)) {
         item {
             Text(
@@ -74,6 +82,20 @@ private fun MarketList(state: MarketsUiState) {
                 modifier = Modifier.padding(vertical = 8.dp),
             )
         }
-        items(state.visibleMarkets, key = { it.symbol }) { MarketRow(it) }
+        state.selectedMarket?.let { market ->
+            item(key = "history-${market.symbol}") {
+                MarketHistoryCard(
+                    market = market,
+                    candles = state.candles,
+                    isLoading = state.isHistoryLoading,
+                    errorMessage = state.historyErrorMessage,
+                    onClose = onHistoryClosed,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+            }
+        }
+        items(state.visibleMarkets, key = { it.symbol }) { market ->
+            MarketRow(market, onClick = { onMarketSelected(market) })
+        }
     }
 }

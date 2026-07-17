@@ -1,6 +1,7 @@
 package com.synex.core.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,9 +20,14 @@ import com.synex.core.model.MarketQuote
 import kotlin.math.abs
 
 @Composable
-fun MarketRow(market: MarketQuote, modifier: Modifier = Modifier) {
+fun MarketRow(
+    market: MarketQuote,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
+    val rowModifier = if (onClick == null) modifier else modifier.clickable(onClick = onClick)
     Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 13.dp),
+        modifier = rowModifier.fillMaxWidth().padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         androidx.compose.foundation.layout.Box(
@@ -40,12 +46,19 @@ fun MarketRow(market: MarketQuote, modifier: Modifier = Modifier) {
             Text(market.market, style = MaterialTheme.typography.bodyMedium, color = SynexMuted)
         }
         Column(horizontalAlignment = Alignment.End) {
-            Text(formatQuote(market.price), style = MaterialTheme.typography.titleMedium)
-            Text(
-                "${if (market.changePercent >= 0) "+" else ""}${"%.2f".format(market.changePercent)}%",
-                style = MaterialTheme.typography.labelMedium,
-                color = if (market.changePercent >= 0) SynexGreen else SynexRed,
-            )
+            val price = market.price
+            val change = market.changePercent
+            if (price != null && change != null) {
+                Text(formatQuote(price), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "${if (change >= 0) "+" else ""}${"%.2f".format(change)}%",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (change >= 0) SynexGreen else SynexRed,
+                )
+            } else {
+                Text(if (market.isOpen) "Market open" else "Market closed", style = MaterialTheme.typography.labelMedium)
+                Text("Live price unavailable", style = MaterialTheme.typography.bodySmall, color = SynexMuted)
+            }
         }
     }
 }

@@ -56,13 +56,28 @@ fun PortfolioScreen(
                 )
             }
             state.errorMessage != null -> item { ErrorState(state.errorMessage, onRetry) }
-            state.portfolio != null -> portfolioContent(state.portfolio)
+            state.portfolio != null -> portfolioContent(state.portfolio, state.liveStatus)
         }
     }
 }
 
-private fun androidx.compose.foundation.lazy.LazyListScope.portfolioContent(portfolio: PortfolioSummary) {
+private fun androidx.compose.foundation.lazy.LazyListScope.portfolioContent(
+    portfolio: PortfolioSummary,
+    liveStatus: String,
+) {
     item { PortfolioSummaryCard(portfolio) }
-    item { SectionHeading("Open positions", "${portfolio.positions.size} active") }
+    item {
+        SectionHeading(
+            "Open positions",
+            "${portfolio.positions.size} active · ${liveStatus.liveLabel()}",
+        )
+    }
     items(portfolio.positions, key = { it.contractId }) { PositionCard(it) }
+}
+
+private fun String.liveLabel() = when (this) {
+    "connected" -> "Live"
+    "reconnecting" -> "Reconnecting"
+    "connection_required" -> "Reconnect account"
+    else -> "Connecting"
 }

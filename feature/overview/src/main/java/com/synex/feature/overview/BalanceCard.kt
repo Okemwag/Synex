@@ -30,16 +30,21 @@ internal fun BalanceCard(snapshot: OverviewSnapshot) {
                     MetricLabel("TOTAL EQUITY")
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        formatMoney(portfolio.equity, portfolio.currency),
+                        portfolio.equity?.let { formatMoney(it, portfolio.currency) } ?: "Unavailable",
                         style = MaterialTheme.typography.displaySmall,
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     MetricLabel("OPEN P/L")
-                    Text(
-                        formatMoney(portfolio.profitLoss, portfolio.currency),
-                        color = if (portfolio.profitLoss >= 0) SynexGreen else SynexRed,
-                    )
+                    val profitLoss = portfolio.profitLoss
+                    if (profitLoss != null) {
+                        Text(
+                            formatMoney(profitLoss, portfolio.currency),
+                            color = if (profitLoss >= 0) SynexGreen else SynexRed,
+                        )
+                    } else {
+                        Text("Unavailable", color = Color.White.copy(alpha = 0.7f))
+                    }
                 }
             }
             Text(

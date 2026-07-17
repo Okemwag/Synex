@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.synex.core.data.SynexRepository
+import com.synex.core.model.MarketQuote
 import com.synex.core.ui.customerMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,47 @@ class MarketsViewModel(private val repository: SynexRepository) : ViewModel() {
     fun setQuery(query: String) = _state.update { it.copy(query = query) }
 
     fun setCategory(category: String) = _state.update { it.copy(category = category) }
+
+    fun selectMarket(market: MarketQuote) {
+        _state.update {
+            it.copy(
+                selectedMarket = market,
+                candles = emptyList(),
+                isHistoryLoading = true,
+                historyErrorMessage = null,
+            )
+        }
+        viewModelScope.launch {
+            runCatching { repository.candles(market.symbol) }
+                .onSuccess { candles ->
+                    _state.update { current ->
+                        if (current.selectedMarket?.symbol != market.symbol) current else current.copy(
+                            candles = candles.sortedBy { it.epochSeconds },
+                            isHistoryLoading = false,
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update { current ->
+                        if (current.selectedMarket?.symbol != market.symbol) current else current.copy(
+                            isHistoryLoading = false,
+                            historyErrorMessage = error.customerMessage("load market history"),
+                        )
+                    }
+                }
+        }
+    }
+
+    fun closeMarketHistory() {
+        _state.update {
+            it.copy(
+                selectedMarket = null,
+                candles = emptyList(),
+                isHistoryLoading = false,
+                historyErrorMessage = null,
+            )
+        }
+    }
 
     fun refresh() {
         viewModelScope.launch {

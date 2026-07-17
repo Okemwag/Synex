@@ -7,15 +7,15 @@ import com.synex.core.network.dto.PositionDto
 internal fun PositionDto.toDomain() = Position(
     contractId = contractId,
     symbol = symbol,
-    displayName = displayName.ifBlank { symbol },
+    displayName = longcode.ifBlank { symbol },
     direction = if (contractType.contains("PUT", ignoreCase = true)) {
         PositionDirection.DOWN
     } else {
         PositionDirection.UP
     },
     buyPrice = buyPrice,
-    currentValue = bidPrice,
-    profitLoss = profit,
+    currentValue = null,
+    profitLoss = null,
     currency = currency,
     purchaseEpochSeconds = purchaseTime,
 )

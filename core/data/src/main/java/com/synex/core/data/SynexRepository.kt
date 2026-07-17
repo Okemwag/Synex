@@ -1,6 +1,9 @@
 package com.synex.core.data
 
 import com.synex.core.model.MarketQuote
+import com.synex.core.model.Candle
+import com.synex.core.model.AccountUpdate
+import kotlinx.coroutines.flow.Flow
 import com.synex.core.model.OverviewSnapshot
 import com.synex.core.model.PortfolioSummary
 import com.synex.core.model.TradingAccount
@@ -12,7 +15,9 @@ interface SynexRepository {
 
     suspend fun overview(): OverviewSnapshot
     suspend fun markets(): List<MarketQuote>
+    suspend fun candles(symbol: String): List<Candle>
     suspend fun portfolio(): PortfolioSummary
+    fun accountUpdates(loginId: String): Flow<AccountUpdate>
     suspend fun accounts(): List<TradingAccount>
     suspend fun derivConnectUrl(): String
     suspend fun onboardingStatus(): OnboardingStatus
