@@ -53,7 +53,7 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Production Deriv connection
 
-- [ ] Register the production callback in the Deriv application as exactly `https://synex-backend.onrender.com/v1/auth/deriv/callback`.
+- [x] Register the production callback in the Deriv application as exactly `https://synex-backend.onrender.com/v1/auth/deriv/callback`.
 - [x] Store encrypted OAuth grants and connected Deriv accounts after a successful link.
 - [x] Refresh expiring Deriv access tokens, rotate refresh tokens when supplied, and preserve previously granted scopes.
 - [x] Reload connected accounts after authentication and retain the selected account across app workflows.
@@ -84,10 +84,10 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Schema-driven contract catalogue
 
-- [ ] Inventory all 35 current Deriv proposal contract types.
+- [x] Inventory all 35 current Deriv proposal contract types. The pinned schema enum is enforced at the backend proposal boundary.
 - [x] Group contract types into UI families so the ticket can render barriers, digits, multipliers, accumulators, tick selection, vanilla, and turbo controls appropriately.
-- [ ] Record the required and optional proposal fields for every contract type.
-- [ ] Record account, jurisdiction, symbol, and availability restrictions.
+- [x] Record required and optional proposal fields for every contract type and attach the applicable rule to each live `contracts_for` result.
+- [x] Record account, jurisdiction, symbol, and availability restrictions in the shared contract rule returned to clients.
 - [ ] Generate or validate the catalogue from the official schema instead of maintaining an unverified handwritten list.
 - [x] Show only contract types returned by Deriv's `contracts_for` response for the selected market and use its barrier/range metadata to configure the ticket.
 
@@ -104,9 +104,9 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 - [x] Support duration-based expiry.
 - [x] Support date-based expiry.
 - [x] Support take-profit and stop-loss limit orders through Deriv's nested `limit_order` contract.
-- [ ] Validate required fields locally before requesting a proposal.
-- [ ] Show understandable validation errors returned by Deriv.
-- [ ] Refresh expired proposals before purchase.
+- [x] Validate required fields locally before requesting a proposal, using the selected `contracts_for` metadata and the pinned proposal schema constraints.
+- [x] Show understandable validation errors returned by Deriv while retaining safe provider detail for errors that do not match a known category.
+- [x] Refresh expired proposals before purchase and require the customer to review and reconfirm the changed price.
 - [x] Prevent double purchases through UI locking, instruction tracking, request hashing, and backend idempotency keys.
 
 ### Purchase and position lifecycle
@@ -117,7 +117,7 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 - [x] Support eligible early sell operations.
 - [x] Support eligible cancellation operations.
 - [x] Support contract updates and update history.
-- [ ] Show settled contract results and transaction references.
+- [x] Show settled contract results with paid, returned, profit/loss, contract ID, and Deriv transaction ID as separate customer-visible values.
 - [x] Require explicit confirmation before every real-money purchase.
 - [ ] Add configurable stake, daily-loss, and session-loss limits.
 
