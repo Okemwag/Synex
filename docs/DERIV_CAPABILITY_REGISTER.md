@@ -1,0 +1,87 @@
+# Deriv capability register
+
+Baseline: `production_v20260804_0` (audited 2026-08-17). The canonical machine-readable inventory is [`schema/deriv-api-consumption.json`](https://github.com/Okemwag/synex-backend/blob/main/schema/deriv-api-consumption.json).
+
+Status values are `user-facing`, `operator-facing`, `internal-only`, `intentionally-unsupported`, and `pending`. “Web” and “Android” identify the customer workflow; a dash means the operation is transport-only or intentionally available on one client.
+
+## WebSocket requests (30/30 accounted for)
+
+| Operation | Status | Backend implementation | Web | Android |
+|---|---|---|---|---|
+| `active_symbols` | user-facing | [market handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Markets](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/MarketsPage.tsx) | [Markets](../feature/markets/src/main/java/com/synex/feature/markets/MarketsScreen.kt) |
+| `auto_get` | intentionally-unsupported | Safe replacement: [durable automation handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/automation.go) | [Automation](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/AutomationPage.tsx) | [Automation](../feature/automation/src/main/java/com/synex/feature/automation/AutomationScreen.kt) |
+| `auto_list` | intentionally-unsupported | Safe replacement: [durable automation handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/automation.go) | [Automation](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/AutomationPage.tsx) | [Automation](../feature/automation/src/main/java/com/synex/feature/automation/AutomationScreen.kt) |
+| `auto_list_strategies` | intentionally-unsupported | Safe replacement: [Synex strategies](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/automation.go) | [Automation](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/AutomationPage.tsx) | [Automation](../feature/automation/src/main/java/com/synex/feature/automation/AutomationScreen.kt) |
+| `auto_pause` | intentionally-unsupported | Safe replacement: [durable transitions](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/automation.go) | [Automation](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/AutomationPage.tsx) | [Automation](../feature/automation/src/main/java/com/synex/feature/automation/AutomationScreen.kt) |
+| `auto_resume` | intentionally-unsupported | Safe replacement: [durable transitions](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/automation.go) | [Automation](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/AutomationPage.tsx) | [Automation](../feature/automation/src/main/java/com/synex/feature/automation/AutomationScreen.kt) |
+| `auto_start` | intentionally-unsupported | Safe replacement: [risk-controlled runner](https://github.com/Okemwag/synex-backend/blob/main/internal/automation/runner.go) | [Automation](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/AutomationPage.tsx) | [Automation](../feature/automation/src/main/java/com/synex/feature/automation/AutomationScreen.kt) |
+| `auto_stop` | intentionally-unsupported | Safe replacement: [durable transitions](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/automation.go) | [Automation](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/AutomationPage.tsx) | [Automation](../feature/automation/src/main/java/com/synex/feature/automation/AutomationScreen.kt) |
+| `balance` | internal-only | [authenticated account stream](https://github.com/Okemwag/synex-backend/blob/main/internal/accountstream/hub.go) | [account stream](https://github.com/Okemwag/cremia/blob/main/src/features/platform/services/accountStream.ts) | [account stream client](../core/network/src/main/java/com/synex/core/network/SynexApiClient.kt) |
+| `buy` | user-facing | [idempotent trade handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Trade](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/TradePage.tsx) | [Trade](../feature/trade/src/main/java/com/synex/feature/trade/TradeScreen.kt) |
+| `cancel` | user-facing | [trade handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Position](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/PositionDetailPage.tsx) | [Position](../feature/trade/src/main/java/com/synex/feature/trade/PositionDetailScreen.kt) |
+| `contract_update` | user-facing | [trade handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Position](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/PositionDetailPage.tsx) | [Position](../feature/trade/src/main/java/com/synex/feature/trade/PositionDetailScreen.kt) |
+| `contract_update_history` | user-facing | [trade handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Position](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/PositionDetailPage.tsx) | [Position](../feature/trade/src/main/java/com/synex/feature/trade/PositionDetailScreen.kt) |
+| `contracts_for` | user-facing | [market handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Trade](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/TradePage.tsx) | [Trade](../feature/trade/src/main/java/com/synex/feature/trade/TradeScreen.kt) |
+| `contracts_list` | user-facing | [market handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Markets](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/MarketsPage.tsx) | — |
+| `forget` | internal-only | [WebSocket transport](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/client.go) | — | — |
+| `forget_all` | internal-only | [WebSocket transport](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/client.go) | — | — |
+| `logout` | intentionally-unsupported | Ephemeral OTP sockets are closed; OAuth disconnect uses token revocation in [auth handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/auth.go) | [Accounts](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/ConnectPage.tsx) | [Account](../feature/account/src/main/java/com/synex/feature/account/AccountScreen.kt) |
+| `ping` | internal-only | [WebSocket transport](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/client.go) | — | — |
+| `portfolio` | user-facing | [trade handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Portfolio](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/PortfolioPage.tsx) | [Portfolio](../feature/portfolio/src/main/java/com/synex/feature/portfolio/PortfolioScreen.kt) |
+| `profit_table` | user-facing | [activity handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Activity](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/ActivityPage.tsx) | [Activity](../feature/activity/src/main/java/com/synex/feature/activity/ActivityScreen.kt) |
+| `proposal` | user-facing | [validated proposal handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Trade](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/TradePage.tsx) | [Trade](../feature/trade/src/main/java/com/synex/feature/trade/TradeScreen.kt) |
+| `proposal_open_contract` | user-facing | [account stream and position handler](https://github.com/Okemwag/synex-backend/blob/main/internal/accountstream/hub.go) | [Portfolio](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/PortfolioPage.tsx) | [Portfolio](../feature/portfolio/src/main/java/com/synex/feature/portfolio/PortfolioScreen.kt) |
+| `sell` | user-facing | [trade handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Portfolio](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/PortfolioPage.tsx) | [Position](../feature/trade/src/main/java/com/synex/feature/trade/PositionDetailScreen.kt) |
+| `statement` | user-facing | [activity handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Activity](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/ActivityPage.tsx) | [Activity](../feature/activity/src/main/java/com/synex/feature/activity/ActivityScreen.kt) |
+| `ticks` | user-facing | [shared reconnecting market stream](https://github.com/Okemwag/synex-backend/blob/main/internal/marketstream/hub.go) | [live Markets](https://github.com/Okemwag/cremia/blob/main/src/features/platform/services/marketStream.ts) | — |
+| `ticks_history` | user-facing | [bounded/cached history handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Markets](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/MarketsPage.tsx) | [Markets](../feature/markets/src/main/java/com/synex/feature/markets/MarketsScreen.kt) |
+| `time` | user-facing | [system time handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Markets](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/MarketsPage.tsx) | — |
+| `trading_times` | user-facing | [market handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/trading.go) | [Markets](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/MarketsPage.tsx) | — |
+| `transaction` | internal-only | [account stream reconciliation](https://github.com/Okemwag/synex-backend/blob/main/internal/accountstream/hub.go) | [Activity refresh](https://github.com/Okemwag/cremia/blob/main/src/pages/dashboard/ActivityPage.tsx) | [Activity refresh](../feature/activity/src/main/java/com/synex/feature/activity/ActivityViewModel.kt) |
+
+## REST operations (27/27 accounted for)
+
+| Method and path | Status | Backend implementation | Workflow |
+|---|---|---|---|
+| `GET /trading/v1/options/accounts` | user-facing | [account setup](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/account_setup.go) | Web Accounts; Android Account |
+| `POST /trading/v1/options/accounts` | user-facing | [account setup](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/account_setup.go) | Web Accounts; Android Account |
+| `POST /trading/v1/options/accounts/{account_id}/reset-demo-balance` | user-facing | [account setup](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/account_setup.go) | Web Accounts; Android Account |
+| `POST /trading/v1/options/accounts/{accountId}/otp` | internal-only | [platform client](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/platform.go) | Authenticated WebSocket bootstrap |
+| `POST /trading/v1/options/contracts/bulk-purchase/real` | pending | Not implemented pending credential decision | Dedicated `bulk_trade_operator` only; never web/Android |
+| `POST /trading/v1/options/contracts/bulk-purchase/demo` | pending | Not implemented pending credential decision | Dedicated `bulk_trade_operator` only; never web/Android |
+| `GET /trading/v1/options/ws/demo` | internal-only | [platform client](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/platform.go) | Demo account socket bootstrap |
+| `GET /trading/v1/options/ws/real` | internal-only | [platform client](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/platform.go) | Real account socket bootstrap |
+| `GET /trading/v1/options/ws/public` | internal-only | [market transport](https://github.com/Okemwag/synex-backend/blob/main/internal/marketstream/hub.go) | Public market data |
+| `GET /trading/v1/options/legacy/statement` | user-facing | [legacy handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/legacy.go) | Web and Android Legacy history |
+| `GET /trading/v1/options/legacy/accounts` | user-facing | [legacy handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/legacy.go) | Web and Android Legacy history |
+| `GET /trading/v1/options/legacy/migration-status` | user-facing | [legacy handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/legacy.go) | Web and Android Legacy history |
+| `GET /applications/v1/markup-statistics` | operator-facing | [operations handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/operations.go) | [Web Operations](https://github.com/Okemwag/cremia/blob/main/src/pages/operations/OperationsPage.tsx) |
+| `GET /v1/health` | internal-only | [health monitor](https://github.com/Okemwag/synex-backend/blob/main/internal/upstreamhealth/monitor.go) | Web and Android outage banners |
+| `GET /payment-agents/v1/agents` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `GET /payment-agents/v1/agents/{id}` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `GET /payment-agents/v1/agent-statistics` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `GET /payment-agents/v1/clients/me` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `PATCH /payment-agents/v1/clients/me` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `POST /payment-agents/v1/transfer` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `GET /payment-agents/v1/transfer/{request_id}` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `POST /payment-agents/v1/withdraw/verification_code` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `POST /payment-agents/v1/withdraw` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `GET /payment-agents/v1/withdraw/{request_id}` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `GET /account/v1/nickname` | user-facing | [account management](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/account_management.go) | Web Accounts; Android Account |
+| `GET /wallet/v1/wallets` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+| `GET /wallet/v1/transactions/{wallet_type}` | user-facing | [funding handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/funding.go) | Web and Android Funding |
+
+## Intentional exclusions and pending decisions
+
+| Capability | Reason | Owner | Review date |
+|---|---|---|---|
+| Native `auto_*` WebSocket operations | Deriv-native runs can execute repeated purchases outside Synex's durable leases, per-account/session loss accounting, idempotency ledger, emergency kill switch, and immutable execution audit. Synex exposes the same customer workflow through its controlled runner instead. | Product and risk | 2026-11-17 |
+| WebSocket `logout` | Synex uses short-lived OTP WebSockets and closes them after use. Customer disconnect revokes the OAuth grant, which is stronger than logging out one ephemeral socket. | Platform | 2026-11-17 |
+| Demo and real bulk purchase | The official REST payload requires raw per-account Personal Access Tokens rather than Synex OAuth grants. Accepting and transmitting those credentials, plus enabling multi-account real-money execution, requires explicit product-owner authorization. Access is already defined as a dedicated server-side `bulk_trade_operator` role and is not inherited from normal customer or operations-dashboard access. PATs must be request-only, excluded from persistence/logging/errors, and zeroed from in-memory request structures after the provider call. | Product owner | 2026-09-17 |
+
+## Client parity
+
+- Manual trading, positions, activity, accounts, funding, wallets, payment agents, safe automation, and legacy history are available on both web and Android.
+- Web additionally shows live public ticks, Deriv server time, trading schedules, contract-category counts, and the isolated operator dashboard.
+- Android deliberately has no operator dashboard because application-owner credentials are server-only. Android uses paginated candle history; live public tick streaming remains a web enhancement and is not required for trade or portfolio correctness.
+- Update this register and the machine-readable manifest in the same change whenever `DERIV_SCHEMA_VERSION` changes. Unsupported entries require an owner, reason, and future review date.

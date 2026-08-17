@@ -83,6 +83,9 @@ class NetworkSynexRepository(
     override suspend fun candles(symbol: String) =
         api.candles(symbol).data.map { it.toDomain() }
 
+    override suspend fun earlierCandles(symbol: String, end: Long) =
+        api.candles(symbol, end = end).data.map { it.toDomain() }
+
     override suspend fun portfolio(): PortfolioSummary {
         return portfolioFor(activeAccount())
     }

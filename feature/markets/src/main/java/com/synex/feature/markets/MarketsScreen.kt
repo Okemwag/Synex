@@ -36,6 +36,7 @@ fun MarketsRoute(
         viewModel::setQuery,
         viewModel::setCategory,
         viewModel::selectMarket,
+        viewModel::loadEarlierHistory,
         viewModel::closeMarketHistory,
         viewModel::refresh,
         modifier,
@@ -48,6 +49,7 @@ fun MarketsScreen(
     onQueryChange: (String) -> Unit,
     onCategoryChange: (String) -> Unit,
     onMarketSelected: (com.synex.core.model.MarketQuote) -> Unit,
+    onLoadEarlierHistory: () -> Unit,
     onHistoryClosed: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -62,7 +64,7 @@ fun MarketsScreen(
         when {
             state.isLoading -> LoadingState(Modifier.padding(horizontal = 20.dp))
             state.errorMessage != null -> ErrorState(state.errorMessage, onRetry, Modifier.padding(horizontal = 20.dp))
-            else -> MarketList(state, onMarketSelected, onHistoryClosed)
+            else -> MarketList(state, onMarketSelected, onLoadEarlierHistory, onHistoryClosed)
         }
     }
 }
@@ -71,6 +73,7 @@ fun MarketsScreen(
 private fun MarketList(
     state: MarketsUiState,
     onMarketSelected: (com.synex.core.model.MarketQuote) -> Unit,
+    onLoadEarlierHistory: () -> Unit,
     onHistoryClosed: () -> Unit,
 ) {
     LazyColumn(contentPadding = PaddingValues(horizontal = 20.dp, vertical = 2.dp)) {
@@ -89,6 +92,9 @@ private fun MarketList(
                     candles = state.candles,
                     isLoading = state.isHistoryLoading,
                     errorMessage = state.historyErrorMessage,
+                    isEarlierLoading = state.isEarlierHistoryLoading,
+                    hasEarlier = state.hasEarlierHistory,
+                    onLoadEarlier = onLoadEarlierHistory,
                     onClose = onHistoryClosed,
                     modifier = Modifier.padding(bottom = 12.dp),
                 )

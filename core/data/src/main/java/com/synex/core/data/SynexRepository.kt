@@ -35,6 +35,7 @@ interface SynexRepository {
     suspend fun overview(): OverviewSnapshot
     suspend fun markets(): List<MarketQuote>
     suspend fun candles(symbol: String): List<Candle>
+    suspend fun earlierCandles(symbol: String, end: Long): List<Candle> = candles(symbol)
     suspend fun portfolio(): PortfolioSummary
     fun accountUpdates(loginId: String): Flow<AccountUpdate>
     suspend fun accounts(): List<TradingAccount>

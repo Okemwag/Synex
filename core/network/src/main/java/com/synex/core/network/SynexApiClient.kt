@@ -199,10 +199,12 @@ class SynexApiClient private constructor(
         symbol: String,
         granularitySeconds: Int = ApiDefaults.CANDLE_GRANULARITY_SECONDS,
         count: Int = ApiDefaults.CANDLE_COUNT,
+        end: Long? = null,
     ): CandlesResponse = publicGet(ApiRoutes.CANDLES) {
         parameter("symbol", symbol)
         parameter("granularity", granularitySeconds)
         parameter("count", count)
+        parameter("end", end ?: "latest")
     }
 
     suspend fun portfolio(loginId: String): PortfolioResponse =

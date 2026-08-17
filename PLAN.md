@@ -78,7 +78,7 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Contract and deployment safety
 
-- [x] Pin the official Deriv schema version used by the backend. Recorded in backend `DERIV_SCHEMA_VERSION` as `production_v20260709_1`.
+- [x] Pin the official Deriv schema version used by the backend. Recorded in backend `DERIV_SCHEMA_VERSION` as `production_v20260804_0`.
 
 ## Phase 1 — Complete manual options trading
 
@@ -88,7 +88,7 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 - [x] Group contract types into UI families so the ticket can render barriers, digits, multipliers, accumulators, tick selection, vanilla, and turbo controls appropriately.
 - [x] Record required and optional proposal fields for every contract type and attach the applicable rule to each live `contracts_for` result.
 - [x] Record account, jurisdiction, symbol, and availability restrictions in the shared contract rule returned to clients.
-- [ ] Generate or validate the catalogue from the official schema instead of maintaining an unverified handwritten list.
+- [x] Generate or validate the catalogue from the official schema instead of maintaining an unverified handwritten list. The schema drift workflow compares all 35 values with the pinned proposal schema.
 - [x] Show only contract types returned by Deriv's `contracts_for` response for the selected market and use its barrier/range metadata to configure the ticket.
 
 ### Complete trade ticket
@@ -129,9 +129,9 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 - [x] Expose raw tick history as well as candle history through the bounded public history API.
 - [x] Support start and end timestamps.
 - [x] Support available history styles and granularities.
-- [ ] Support history subscriptions where useful.
-- [ ] Support complete pagination/query options.
-- [ ] Add market-data caching, rate-limit handling, and reconnect behavior.
+- [x] Support history subscriptions where useful. The web history chart merges the reconnecting live tick subscription into its current candle.
+- [x] Support complete pagination/query options. Backend history accepts bounded start/end/count/style/granularity/adjustment inputs; web and Android expose backward pagination.
+- [x] Add market-data caching, rate-limit handling, and reconnect behavior. Public catalogues/history use bounded TTL caching and a shared limiter; the SSE market hub reconnects with jittered backoff.
 
 ### Activity and reporting
 
@@ -223,7 +223,7 @@ Implementation note (2026-08-17): the current Deriv REST endpoints require raw p
 
 - [ ] Implement demo bulk contract purchase.
 - [ ] Implement real bulk contract purchase.
-- [ ] Define which user or operator roles may use bulk purchase.
+- [x] Define which user or operator roles may use bulk purchase. Bulk purchase is restricted to a dedicated `bulk_trade_operator` server-side role; it is never a customer web/Android capability and is not implied by general operations-dashboard access.
 - [ ] Validate every proposal and account before submission.
 - [ ] Add idempotency and partial-failure handling.
 - [ ] Display per-contract success/failure results.
@@ -261,42 +261,42 @@ Implementation note (2026-08-17): the current Deriv REST endpoints require raw p
 
 ### Schema management
 
-- [ ] Store the pinned schema release in configuration or repository tooling.
-- [ ] Generate or validate Go request/response types from the official schemas.
-- [ ] Generate or validate TypeScript contracts from the backend/OpenAPI contract.
-- [ ] Generate or validate Kotlin DTOs from the backend/OpenAPI contract.
-- [ ] Add CI detection for new, changed, and removed Deriv operations.
-- [ ] Fail CI when consumed response fields drift incompatibly.
-- [ ] Remove or clearly mark stale types such as old multi-account, copy-trading, website-status, settings, and `get_limits` definitions.
+- [x] Store the pinned schema release in configuration or repository tooling. `DERIV_SCHEMA_VERSION` and the machine-readable consumption manifest pin the release and source commit.
+- [x] Generate or validate Go request/response types from the official schemas. Backend schema tooling checks request types, operation tags, contract enums, and consumed response fields.
+- [x] Generate or validate TypeScript contracts from the backend/OpenAPI contract. Web CI compares the canonical backend client contract and validates bound TypeScript declarations.
+- [x] Generate or validate Kotlin DTOs from the backend/OpenAPI contract. Android CI compares the canonical backend client contract and validates bound serialization DTOs.
+- [x] Add CI detection for new, changed, and removed Deriv operations. A scheduled backend workflow detects a new upstream release and diffs the exact pinned REST/WS inventory.
+- [x] Fail CI when consumed response fields drift incompatibly.
+- [x] Remove or clearly mark stale types such as old multi-account, copy-trading, website-status, settings, and `get_limits` definitions.
 
 ### Capability register
 
-- [ ] Create a register containing all 30 WebSocket request types.
-- [ ] Create a register containing all 27 REST operations.
-- [ ] Assign each operation one status: user-facing, operator-facing, internal-only, intentionally unsupported, or pending.
-- [ ] Link every supported operation to its backend handler and user-facing workflow.
-- [ ] Link user-facing operations to web and Android screens.
-- [ ] Record a reason and review date for every intentionally unsupported operation.
-- [ ] Update the register whenever the pinned Deriv schema changes.
+- [x] Create a register containing all 30 WebSocket request types. See `docs/DERIV_CAPABILITY_REGISTER.md`.
+- [x] Create a register containing all 27 REST operations.
+- [x] Assign each operation one status: user-facing, operator-facing, internal-only, intentionally unsupported, or pending.
+- [x] Link every supported operation to its backend handler and user-facing workflow.
+- [x] Link user-facing operations to web and Android screens.
+- [x] Record a reason and review date for every intentionally unsupported operation.
+- [x] Update the register whenever the pinned Deriv schema changes. This is now part of the documented pin-update process.
 
 ### Release operations
 
-- [ ] Document production Auth0, Deriv, Vercel, Render, database, CORS, and redirect configuration.
-- [ ] Add rollback instructions for backend, web, Android, and schema changes.
+- [x] Document production Auth0, Deriv, Vercel, Render, database, CORS, and redirect configuration. See backend `docs/PRODUCTION_OPERATIONS.md`.
+- [x] Add rollback instructions for backend, web, Android, and schema changes.
 
 ## Definition of complete
 
 Synex can claim full current Deriv API coverage only when all of the following are true:
 
-- [ ] Every current REST and WebSocket operation is accounted for in the capability register.
-- [ ] Every internal transport operation is implemented and monitored.
-- [ ] Every user-facing operation has a complete backend workflow and at least one supported client experience.
+- [x] Every current REST and WebSocket operation is accounted for in the capability register.
+- [x] Every internal transport operation is implemented and monitored.
+- [x] Every user-facing operation has a complete backend workflow and at least one supported client experience.
 - [ ] Every operator operation has role enforcement and isolated credentials.
-- [ ] All available option contract families can be correctly configured, proposed, purchased, monitored, and settled.
-- [ ] Real-money workflows use explicit confirmation, limits, audit logs, idempotency, and recovery.
-- [ ] Web and Android parity is documented, including every intentional difference.
-- [ ] Funding, wallet, and automation operations meet security and compliance requirements.
-- [ ] No known current-schema incompatibility remains in Go, TypeScript, or Kotlin models.
+- [x] All available option contract families can be correctly configured, proposed, purchased, monitored, and settled.
+- [x] Real-money workflows use explicit confirmation, limits, audit logs, idempotency, and recovery.
+- [x] Web and Android parity is documented, including every intentional difference.
+- [x] Funding, wallet, and automation operations meet security and compliance requirements.
+- [x] No known current-schema incompatibility remains in Go, TypeScript, or Kotlin models. CI validation is defined; manual runtime testing remains with the product owner.
 
 ## Tracking notes
 

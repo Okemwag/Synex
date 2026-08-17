@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "deriv_schema_release": "production_v20260804_0",
+  "types": {
+    "MarketSymbol": ["underlying_symbol","underlying_symbol_name","market","exchange_is_open","is_trading_suspended"],
+    "Candle": ["epoch","open","high","low","close"],
+    "ContractOption": ["contract_type","contract_display","min_contract_duration","max_contract_duration","min_stake","max_stake","multiplier_range","growth_rate_range","cancellation_range","synex_rules"],
+    "Proposal": ["id","ask_price","payout","longcode","synex_expires_at","maximum_loss"],
+    "TradeReceipt": ["order_reference","login_id","is_virtual","status","symbol","contract_type","currency","purchase_price","maximum_loss","potential_payout","contract_id","provider_transaction_id","longcode"],
+    "Position": ["contract_id","contract_type","underlying","status","buy_price","current_spot","profit","profit_percentage","currency","is_expired","is_sold"],
+    "Wallet": ["wallet_id","type","balances","total_balance"],
+    "PaymentAgent": ["id","name","nickname","information","email","phone_numbers","payment_methods","countries","urls","deposit_commission","withdrawal_commission","withdrawal_minimum","withdrawal_maximum"],
+    "AutomationStrategy": ["id","login_id","is_virtual","name","symbol","contract_type","currency","amount","basis","interval_seconds","max_trades","max_loss","max_duration_minutes","max_concurrent_positions","enabled"],
+    "AutomationRun": ["id","strategy_id","strategy_name","login_id","status","is_virtual","trade_count","successful_trades","failed_trades","committed_loss","settled_trades","realized_profit","started_at","next_execution_at","last_error"]
+  }
+}

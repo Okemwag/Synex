@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,9 @@ internal fun MarketHistoryCard(
     candles: List<Candle>,
     isLoading: Boolean,
     errorMessage: String?,
+    isEarlierLoading: Boolean,
+    hasEarlier: Boolean,
+    onLoadEarlier: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -66,7 +70,12 @@ internal fun MarketHistoryCard(
                 candles.isEmpty() -> Box(Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
                     Text("No price history is currently available.", color = SynexMuted)
                 }
-                else -> CandleHistory(candles)
+                else -> {
+                    TextButton(onClick = onLoadEarlier, enabled = hasEarlier && !isEarlierLoading) {
+                        Text(if (isEarlierLoading) "Loading earlier prices…" else if (hasEarlier) "Load earlier prices" else "Start of available history")
+                    }
+                    CandleHistory(candles)
+                }
             }
         }
     }

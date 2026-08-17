@@ -12,6 +12,8 @@ data class MarketsUiState(
     val selectedMarket: MarketQuote? = null,
     val candles: List<Candle> = emptyList(),
     val isHistoryLoading: Boolean = false,
+    val isEarlierHistoryLoading: Boolean = false,
+    val hasEarlierHistory: Boolean = true,
     val historyErrorMessage: String? = null,
 ) {
     val categories get() = listOf("All") + markets.map(MarketQuote::market).distinct()

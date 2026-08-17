@@ -28,6 +28,8 @@ class MarketsViewModel(private val repository: SynexRepository) : ViewModel() {
                 selectedMarket = market,
                 candles = emptyList(),
                 isHistoryLoading = true,
+                isEarlierHistoryLoading = false,
+                hasEarlierHistory = true,
                 historyErrorMessage = null,
             )
         }
@@ -52,12 +54,38 @@ class MarketsViewModel(private val repository: SynexRepository) : ViewModel() {
         }
     }
 
+    fun loadEarlierHistory() {
+        val market = state.value.selectedMarket ?: return
+        val firstEpoch = state.value.candles.minOfOrNull { it.epochSeconds } ?: return
+        if (state.value.isEarlierHistoryLoading || !state.value.hasEarlierHistory) return
+        _state.update { it.copy(isEarlierHistoryLoading = true, historyErrorMessage = null) }
+        viewModelScope.launch {
+            runCatching { repository.earlierCandles(market.symbol, firstEpoch - 1) }
+                .onSuccess { earlier ->
+                    _state.update { current ->
+                        if (current.selectedMarket?.symbol != market.symbol) current else current.copy(
+                            candles = (earlier + current.candles).distinctBy { it.epochSeconds }.sortedBy { it.epochSeconds },
+                            isEarlierHistoryLoading = false,
+                            hasEarlierHistory = earlier.isNotEmpty(),
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update { current -> current.copy(
+                        isEarlierHistoryLoading = false,
+                        historyErrorMessage = error.customerMessage("load earlier market history"),
+                    ) }
+                }
+        }
+    }
+
     fun closeMarketHistory() {
         _state.update {
             it.copy(
                 selectedMarket = null,
                 candles = emptyList(),
                 isHistoryLoading = false,
+                isEarlierHistoryLoading = false,
                 historyErrorMessage = null,
             )
         }

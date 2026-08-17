@@ -1,0 +1,22 @@
+name: Synex client contract drift
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  kotlin-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compare canonical backend contract
+        run: |
+          curl --fail --location --silent --show-error https://raw.githubusercontent.com/Okemwag/synex-backend/main/schema/synex-client-contract.json --output /tmp/synex-client-contract.json
+          cmp contract/synex-client-contract.json /tmp/synex-client-contract.json
+      - name: Validate Kotlin DTO fields
+        run: node scripts/validate-client-contract.mjs
