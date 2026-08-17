@@ -61,6 +61,14 @@ import com.synex.core.network.dto.WalletTransactionsResponse
 import com.synex.core.network.dto.WalletsResponse
 import com.synex.core.network.dto.WithdrawalVerificationRequest
 import com.synex.core.network.dto.WithdrawalVerificationResponse
+import com.synex.core.network.dto.AutomationRunDto
+import com.synex.core.network.dto.AutomationRunsResponse
+import com.synex.core.network.dto.AutomationSafetyDto
+import com.synex.core.network.dto.AutomationStrategiesResponse
+import com.synex.core.network.dto.AutomationStrategyDto
+import com.synex.core.network.dto.CreateAutomationStrategyRequest
+import com.synex.core.network.dto.SetAutomationSafetyRequest
+import com.synex.core.network.dto.StartAutomationRequest
 import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.CancellationException
@@ -139,6 +147,27 @@ class SynexApiClient private constructor(
 
     suspend fun paymentAgentWithdrawalStatus(requestId: String): PaymentOperationResponse =
         authenticatedGet("v1/payment-agents/withdrawals/$requestId")
+
+    suspend fun automationStrategies(): AutomationStrategiesResponse = authenticatedGet(ApiRoutes.AUTOMATION_STRATEGIES)
+
+    suspend fun createAutomationStrategy(request: CreateAutomationStrategyRequest): AutomationStrategyDto =
+        authenticatedPost(ApiRoutes.AUTOMATION_STRATEGIES, request)
+
+    suspend fun automationRuns(): AutomationRunsResponse = authenticatedGet(ApiRoutes.AUTOMATION_RUNS) {
+        parameter("limit", 100)
+        parameter("offset", 0)
+    }
+
+    suspend fun startAutomation(request: StartAutomationRequest): AutomationRunDto =
+        authenticatedPost(ApiRoutes.AUTOMATION_RUNS, request)
+
+    suspend fun transitionAutomation(runId: String, action: String): AutomationRunDto =
+        authenticatedPost("v1/automation/runs/$runId/$action", EmptyRequest)
+
+    suspend fun automationSafety(): AutomationSafetyDto = authenticatedGet(ApiRoutes.AUTOMATION_SAFETY)
+
+    suspend fun setAutomationKillSwitch(enabled: Boolean): AutomationSafetyDto =
+        authenticatedPost(ApiRoutes.AUTOMATION_KILL_SWITCH, SetAutomationSafetyRequest(enabled))
 
     suspend fun symbols(): SymbolsResponse = publicGet(ApiRoutes.SYMBOLS)
 

@@ -31,6 +31,10 @@ internal object ApiRoutes {
     const val PAYMENT_AGENT_TRANSFERS = "v1/payment-agents/transfers"
     const val PAYMENT_AGENT_WITHDRAWAL_CODE = "v1/payment-agents/withdrawals/verification-code"
     const val PAYMENT_AGENT_WITHDRAWALS = "v1/payment-agents/withdrawals"
+    const val AUTOMATION_STRATEGIES = "v1/automation/strategies"
+    const val AUTOMATION_RUNS = "v1/automation/runs"
+    const val AUTOMATION_SAFETY = "v1/automation/safety"
+    const val AUTOMATION_KILL_SWITCH = "v1/automation/kill-switch"
 }
 
 internal object ApiDefaults {

@@ -201,23 +201,25 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Automated trading
 
-- [ ] Implement strategy listing.
-- [ ] Implement automation-run listing.
-- [ ] Implement retrieval of one automation run.
-- [ ] Implement automation start.
-- [ ] Implement automation pause.
-- [ ] Implement automation resume.
-- [ ] Implement automation stop.
-- [ ] Build strategy configuration forms.
-- [ ] Support explicit demo/real account selection.
-- [ ] Display live run status, trades, profit/loss, and errors.
-- [ ] Store run history and audit events.
-- [ ] Enforce stake, loss, duration, and concurrency limits.
-- [ ] Add an emergency kill switch.
-- [ ] Require stronger confirmation for real-account automation.
-- [ ] Implement safe reconnect and state reconciliation after backend restarts.
+- [x] Implement strategy listing.
+- [x] Implement automation-run listing.
+- [x] Implement retrieval of one automation run.
+- [x] Implement automation start.
+- [x] Implement automation pause.
+- [x] Implement automation resume.
+- [x] Implement automation stop.
+- [x] Build strategy configuration forms on web and Android.
+- [x] Support explicit demo/real account selection through the selected strategy account.
+- [x] Display live run status, execution counts, settled profit/loss, committed loss budget, and errors; continue reconciling unsettled contracts after a run stops.
+- [x] Store immutable run snapshots, run history, trade audits, and automation events.
+- [x] Enforce account stake/daily/session loss limits plus run trade, loss, duration, and concurrency limits.
+- [x] Add an emergency kill switch that permanently stops every open run for the user.
+- [x] Require stronger confirmation for real-account automation.
+- [x] Implement restart-safe execution leases, durable next-run state, and unresolved-order reconciliation gates.
 
 ### Bulk purchase
+
+Implementation note (2026-08-17): the current Deriv REST endpoints require raw per-account Personal Access Tokens and explicitly reject the OAuth grants used by Synex. The transport must remain operator-only and is pending explicit product-owner authorization to accept and transmit those credentials.
 
 - [ ] Implement demo bulk contract purchase.
 - [ ] Implement real bulk contract purchase.

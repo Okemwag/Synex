@@ -24,6 +24,9 @@ import com.synex.core.model.PaymentAgentSettings
 import com.synex.core.model.PaymentOperation
 import com.synex.core.model.WalletTransactionPage
 import com.synex.core.model.WithdrawalVerification
+import com.synex.core.model.AutomationRun
+import com.synex.core.model.AutomationStrategy
+import com.synex.core.model.AutomationStrategyDraft
 
 interface SynexRepository {
     val activeLoginId: StateFlow<String?>
@@ -63,6 +66,13 @@ interface SynexRepository {
     suspend fun requestWithdrawalCode(agentId: Long, amount: String, currency: String): WithdrawalVerification = unsupportedFunding()
     suspend fun paymentAgentWithdrawal(agentId: Long, amount: String, currency: String, verificationCode: String, requestId: String): PaymentOperation = unsupportedFunding()
     suspend fun paymentAgentWithdrawalStatus(requestId: String): PaymentOperation = unsupportedFunding()
+    suspend fun automationStrategies(): List<AutomationStrategy> = unsupportedFunding()
+    suspend fun createAutomationStrategy(draft: AutomationStrategyDraft): AutomationStrategy = unsupportedFunding()
+    suspend fun automationRuns(): List<AutomationRun> = unsupportedFunding()
+    suspend fun startAutomation(strategyId: String, realMoneyConfirmed: Boolean): AutomationRun = unsupportedFunding()
+    suspend fun transitionAutomation(runId: String, action: String): AutomationRun = unsupportedFunding()
+    suspend fun automationKillSwitchEnabled(): Boolean = unsupportedFunding()
+    suspend fun setAutomationKillSwitch(enabled: Boolean): Boolean = unsupportedFunding()
 }
 
 private fun <T> unsupportedFunding(): T = throw UnsupportedOperationException("This repository does not implement account and funding operations.")

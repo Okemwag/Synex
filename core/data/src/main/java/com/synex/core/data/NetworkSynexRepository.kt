@@ -46,6 +46,11 @@ import com.synex.core.model.WalletBalance
 import com.synex.core.model.WalletTransaction
 import com.synex.core.model.WalletTransactionPage
 import com.synex.core.model.WithdrawalVerification
+import com.synex.core.model.AutomationRun
+import com.synex.core.model.AutomationStrategy
+import com.synex.core.model.AutomationStrategyDraft
+import com.synex.core.network.dto.CreateAutomationStrategyRequest
+import com.synex.core.network.dto.StartAutomationRequest
 import java.net.URLDecoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -373,6 +378,43 @@ class NetworkSynexRepository(
     override suspend fun paymentAgentWithdrawalStatus(requestId: String): PaymentOperation =
         api.paymentAgentWithdrawalStatus(requestId).data.let { PaymentOperation(requestId, it.status, it.transactionId) }
 
+    override suspend fun automationStrategies(): List<AutomationStrategy> =
+        api.automationStrategies().strategies.map { it.toDomain() }
+
+    override suspend fun createAutomationStrategy(draft: AutomationStrategyDraft): AutomationStrategy {
+        val account = activeAccount()
+        return api.createAutomationStrategy(
+            CreateAutomationStrategyRequest(
+                loginId = account.loginId,
+                name = draft.name,
+                symbol = draft.symbol,
+                contractType = draft.contractType,
+                currency = account.currency,
+                amount = draft.amount,
+                basis = "stake",
+                duration = draft.duration,
+                durationUnit = draft.durationUnit,
+                intervalSeconds = draft.intervalSeconds,
+                maxTrades = draft.maxTrades,
+                maxLoss = draft.maxLoss,
+                maxDurationMinutes = draft.maxDurationMinutes,
+                maxConcurrentPositions = draft.maxConcurrentPositions,
+            ),
+        ).toDomain()
+    }
+
+    override suspend fun automationRuns(): List<AutomationRun> = api.automationRuns().runs.map { it.toDomain() }
+
+    override suspend fun startAutomation(strategyId: String, realMoneyConfirmed: Boolean): AutomationRun =
+        api.startAutomation(StartAutomationRequest(strategyId, realMoneyConfirmed)).toDomain()
+
+    override suspend fun transitionAutomation(runId: String, action: String): AutomationRun =
+        api.transitionAutomation(runId, action).toDomain()
+
+    override suspend fun automationKillSwitchEnabled(): Boolean = api.automationSafety().killSwitchEnabled
+
+    override suspend fun setAutomationKillSwitch(enabled: Boolean): Boolean = api.setAutomationKillSwitch(enabled).killSwitchEnabled
+
     private suspend fun activeAccount(): TradingAccount {
         val accounts = accounts()
         return accounts.firstOrNull { it.loginId == mutableActiveLoginId.value }
@@ -417,6 +459,40 @@ private fun com.synex.core.network.dto.PaymentAgentSettingsDto.toDomain() = Paym
     depositEnabled = depositEnabled,
     withdrawEnabled = withdrawEnabled,
     showRealName = showRealName,
+)
+
+private fun com.synex.core.network.dto.AutomationStrategyDto.toDomain() = AutomationStrategy(
+    id = id,
+    loginId = loginId,
+    isVirtual = isVirtual,
+    name = name,
+    symbol = symbol,
+    contractType = contractType,
+    currency = currency,
+    amount = amount,
+    intervalSeconds = intervalSeconds,
+    maxTrades = maxTrades,
+    maxLoss = maxLoss,
+    maxDurationMinutes = maxDurationMinutes,
+    maxConcurrentPositions = maxConcurrentPositions,
+)
+
+private fun com.synex.core.network.dto.AutomationRunDto.toDomain() = AutomationRun(
+    id = id,
+    strategyId = strategyId,
+    strategyName = strategyName,
+    loginId = loginId,
+    status = status,
+    isVirtual = isVirtual,
+    tradeCount = tradeCount,
+    successfulTrades = successfulTrades,
+    failedTrades = failedTrades,
+    committedLoss = committedLoss,
+    settledTrades = settledTrades,
+    realizedProfit = realizedProfit,
+    startedAt = startedAt,
+    nextExecutionAt = nextExecutionAt,
+    lastError = lastError,
 )
 
 private fun String?.pageCursor(): String? {

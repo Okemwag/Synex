@@ -39,6 +39,7 @@ import com.synex.feature.trade.TradeRoute
 import com.synex.feature.trade.PositionDetailRoute
 import com.synex.feature.activity.ActivityRoute
 import com.synex.feature.funding.FundingRoute
+import com.synex.feature.automation.AutomationRoute
 import com.synex.mobile.navigation.SynexBottomBar
 import com.synex.mobile.navigation.AppRoutes
 import com.synex.mobile.navigation.SynexDestination
@@ -99,10 +100,17 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
                         onLegalClick = { navController.navigate(AppRoutes.LEGAL) },
                         onAuthenticationAction = onSignOut,
                         onFundingClick = { navController.navigate(AppRoutes.FUNDING) },
+                        onAutomationClick = { navController.navigate(AppRoutes.AUTOMATION) },
                     )
                 }
                 composable(AppRoutes.FUNDING) {
                     FundingRoute(
+                        repository = repository,
+                        onAccount = { navController.navigate(SynexDestination.ACCOUNT.route) },
+                    )
+                }
+                composable(AppRoutes.AUTOMATION) {
+                    AutomationRoute(
                         repository = repository,
                         onAccount = { navController.navigate(SynexDestination.ACCOUNT.route) },
                     )

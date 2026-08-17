@@ -106,6 +106,7 @@ dependencies {
     implementation(project(":feature:trade"))
     implementation(project(":feature:activity"))
     implementation(project(":feature:funding"))
+    implementation(project(":feature:automation"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

@@ -40,6 +40,7 @@ fun AccountRoute(
     onAuthenticationAction: () -> Unit,
     onLegalClick: () -> Unit,
     onFundingClick: () -> Unit,
+    onAutomationClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AccountViewModel = viewModel(factory = AccountViewModel.factory(repository)),
 ) {
@@ -74,6 +75,7 @@ fun AccountRoute(
         viewModel::createOptionsAccount,
         viewModel::resetDemoBalance,
         onFundingClick,
+        onAutomationClick,
         modifier,
     )
 }
@@ -89,6 +91,7 @@ fun AccountScreen(
     onCreateAccount: (String, Boolean) -> Unit,
     onResetDemo: (String) -> Unit,
     onFundingClick: () -> Unit,
+    onAutomationClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var confirmRealCreation by remember { mutableStateOf(false) }
@@ -153,6 +156,14 @@ fun AccountScreen(
                             "Review Deriv wallet balances and transactions, or make a verified payment-agent withdrawal.",
                             "Open funding",
                             onFundingClick,
+                        )
+                    }
+                    item {
+                        com.synex.core.ui.ActionState(
+                            "Automated trading",
+                            "Create bounded strategies with trade, duration, loss, and open-position limits.",
+                            "Open automation",
+                            onAutomationClick,
                         )
                     }
                 }

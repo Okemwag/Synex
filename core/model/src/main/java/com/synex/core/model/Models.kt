@@ -73,6 +73,54 @@ data class PaymentOperation(val requestId: String, val status: String, val trans
 
 data class WithdrawalVerification(val message: String, val expiresAt: Long, val nextRequestAt: Long)
 
+data class AutomationStrategy(
+    val id: String,
+    val loginId: String,
+    val isVirtual: Boolean,
+    val name: String,
+    val symbol: String,
+    val contractType: String,
+    val currency: String,
+    val amount: Double,
+    val intervalSeconds: Int,
+    val maxTrades: Int,
+    val maxLoss: Double,
+    val maxDurationMinutes: Int,
+    val maxConcurrentPositions: Int,
+)
+
+data class AutomationRun(
+    val id: String,
+    val strategyId: String,
+    val strategyName: String,
+    val loginId: String,
+    val status: String,
+    val isVirtual: Boolean,
+    val tradeCount: Int,
+    val successfulTrades: Int,
+    val failedTrades: Int,
+    val committedLoss: Double,
+    val settledTrades: Int,
+    val realizedProfit: Double,
+    val startedAt: String,
+    val nextExecutionAt: String,
+    val lastError: String,
+)
+
+data class AutomationStrategyDraft(
+    val name: String,
+    val symbol: String,
+    val contractType: String,
+    val amount: Double,
+    val duration: Int,
+    val durationUnit: String,
+    val intervalSeconds: Int,
+    val maxTrades: Int,
+    val maxLoss: Double,
+    val maxDurationMinutes: Int,
+    val maxConcurrentPositions: Int,
+)
+
 data class MarketQuote(
     val symbol: String,
     val displayName: String,
