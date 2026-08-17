@@ -1,6 +1,6 @@
 # Synex Deriv API Completion Plan
 
-Last audited: 2026-07-17
+Last audited: 2026-08-17
 Official schema baseline: [`production_v20260709_1`](https://github.com/deriv-com/deriv-api-schemas/releases/latest)
 
 ## Goal
@@ -111,7 +111,7 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Purchase and position lifecycle
 
-- [ ] Implement demo purchase for each contract family.
+- [x] Implement demo purchase for each contract family through the shared contract-aware proposal and idempotent buy pipeline.
 - [x] Display a complete purchase receipt, including extended expiry, barrier, multiplier, accumulator, tick, and limit-order terms.
 - [x] Show open-contract status and live profit/loss.
 - [x] Support eligible early sell operations.
@@ -119,16 +119,16 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 - [x] Support contract updates and update history.
 - [x] Show settled contract results with paid, returned, profit/loss, contract ID, and Deriv transaction ID as separate customer-visible values.
 - [x] Require explicit confirmation before every real-money purchase.
-- [ ] Add configurable stake, daily-loss, and session-loss limits.
+- [x] Add configurable per-account stake, daily-loss, and session-loss limits, enforce them before execution, and allow an explicit session reset.
 
 ### Market data completion
 
-- [ ] Implement `contracts_list`.
-- [ ] Implement server time.
-- [ ] Implement trading times and market-session availability.
-- [ ] Expose raw tick history as well as candle history.
-- [ ] Support start and end timestamps.
-- [ ] Support available history styles and granularities.
+- [x] Implement `contracts_list` through the public Synex market API.
+- [x] Implement server time and expose Deriv time in the web market experience.
+- [x] Implement trading times and show the selected market's current session when Deriv supplies one.
+- [x] Expose raw tick history as well as candle history through the bounded public history API.
+- [x] Support start and end timestamps.
+- [x] Support available history styles and granularities.
 - [ ] Support history subscriptions where useful.
 - [ ] Support complete pagination/query options.
 - [ ] Add market-data caching, rate-limit handling, and reconnect behavior.
@@ -239,10 +239,10 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### System operations
 
-- [ ] Keep WebSocket `ping` operating as internal connection maintenance.
-- [ ] Keep `forget` and `forget_all` operating as internal subscription cleanup.
-- [ ] Implement server time.
-- [ ] Implement trading times.
+- [x] Keep WebSocket `ping` operating as internal connection maintenance.
+- [x] Keep `forget` and `forget_all` operating as internal subscription cleanup.
+- [x] Implement server time.
+- [x] Implement trading times.
 - [ ] Implement Deriv REST health monitoring.
 - [ ] Surface relevant upstream outages without leaking internal details.
 - [ ] Add operational alerts for repeated Deriv connection and schema errors.
