@@ -34,4 +34,5 @@ include(":feature:auth")
 include(":feature:onboarding")
 include(":feature:trade")
 include(":feature:activity")
+include(":feature:funding")
  

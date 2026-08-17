@@ -1,7 +1,7 @@
 # Synex Deriv API Completion Plan
 
 Last audited: 2026-08-17
-Official schema baseline: [`production_v20260709_1`](https://github.com/deriv-com/deriv-api-schemas/releases/latest)
+Official schema baseline: [`production_v20260804_0`](https://github.com/deriv-com/deriv-api-schemas/releases/latest)
 
 ## Goal
 
@@ -158,44 +158,44 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Options account setup
 
-- [ ] Implement options account creation.
-- [ ] Implement demo-balance reset.
-- [ ] Keep account WebSocket OTP acquisition working for demo and real accounts.
-- [ ] Display account type, currency, status, jurisdiction, and readiness.
-- [ ] Provide clear switching between demo and real accounts.
-- [ ] Prevent real trading until required onboarding and risk acknowledgement are complete.
+- [x] Implement options account creation.
+- [x] Implement demo-balance reset.
+- [x] Keep account WebSocket OTP acquisition working for demo and real accounts.
+- [x] Display account type, currency, status, jurisdiction, and readiness.
+- [x] Provide clear switching between demo and real accounts.
+- [x] Prevent real trading until required onboarding and risk acknowledgement are complete.
 
 ### OAuth payment scope
 
-- [ ] Add the Deriv `payment` scope only when wallet/payment-agent workflows are ready.
-- [ ] Document why existing users must reconnect to grant the new scope.
-- [ ] Detect missing payment permission and present a reconnect action.
-- [ ] Preserve all required scopes when refreshing access tokens.
+- [x] Add the Deriv `payment` scope only when wallet/payment-agent workflows are ready.
+- [x] Document why existing users must reconnect to grant the new scope.
+- [x] Detect missing payment permission and present a reconnect action.
+- [x] Preserve all required scopes when refreshing access tokens.
 
 ### Wallets
 
-- [ ] Implement wallet listing and balances.
-- [ ] Implement wallet transactions by wallet type.
-- [ ] Add wallet screens to the web app.
-- [ ] Add wallet screens to Android.
-- [ ] Add pagination, filtering, empty states, and errors.
-- [ ] Reconcile wallet transactions with relevant trading activity where possible.
+- [x] Implement wallet listing and balances.
+- [x] Implement wallet transactions by wallet type.
+- [x] Add wallet screens to the web app.
+- [x] Add wallet screens to Android.
+- [x] Add pagination, filtering, empty states, and errors.
+- [x] Reconcile wallet transactions with relevant activity where possible by refreshing the selected wallet after tracked payment-agent operations settle.
 
 ### Payment agents
 
-- [ ] Implement payment-agent listing.
-- [ ] Implement payment-agent details.
-- [ ] Implement payment-agent statistics.
-- [ ] Implement client settings retrieval.
-- [ ] Implement client settings updates.
-- [ ] Implement transfer initiation.
-- [ ] Implement transfer-status tracking.
-- [ ] Implement withdrawal verification-code requests.
-- [ ] Implement withdrawal initiation.
-- [ ] Implement withdrawal-status tracking.
-- [ ] Replace the current funding HTTP 501 placeholders.
-- [ ] Add idempotency, OTP handling, audit logs, limits, status polling, and failure recovery.
-- [ ] Add clear compliance and risk notices around third-party payment agents.
+- [x] Implement payment-agent listing.
+- [x] Implement payment-agent details.
+- [x] Implement payment-agent statistics.
+- [x] Implement client settings retrieval.
+- [x] Implement client settings updates.
+- [x] Implement transfer initiation.
+- [x] Implement transfer-status tracking.
+- [x] Implement withdrawal verification-code requests.
+- [x] Implement withdrawal initiation.
+- [x] Implement withdrawal-status tracking.
+- [x] Replace the current funding HTTP 501 placeholders.
+- [x] Add provider request-ID idempotency, OTP handling, audit logs without OTP leakage, bounded amounts, status polling, and failure recovery.
+- [x] Add clear compliance and risk notices around third-party payment agents.
 
 ## Phase 3 — Automated and advanced trading
 

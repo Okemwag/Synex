@@ -11,6 +11,7 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.patch
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.prepareGet
@@ -45,6 +46,21 @@ import com.synex.core.network.dto.ProposalRequestDto
 import com.synex.core.network.dto.ProposalResponse
 import com.synex.core.network.dto.ReceiptResponse
 import com.synex.core.network.dto.SellRequestDto
+import com.synex.core.network.dto.CreateOptionsAccountRequest
+import com.synex.core.network.dto.FundingCapabilitiesDto
+import com.synex.core.network.dto.JsonElementResponse
+import com.synex.core.network.dto.PaymentAgentResponse
+import com.synex.core.network.dto.PaymentAgentSettingsResponse
+import com.synex.core.network.dto.PaymentAgentStatisticsResponse
+import com.synex.core.network.dto.PaymentAgentTransferRequest
+import com.synex.core.network.dto.PaymentAgentWithdrawalRequest
+import com.synex.core.network.dto.PaymentAgentsResponse
+import com.synex.core.network.dto.PaymentOperationResponse
+import com.synex.core.network.dto.UpdatePaymentAgentSettingsRequest
+import com.synex.core.network.dto.WalletTransactionsResponse
+import com.synex.core.network.dto.WalletsResponse
+import com.synex.core.network.dto.WithdrawalVerificationRequest
+import com.synex.core.network.dto.WithdrawalVerificationResponse
 import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.CancellationException
@@ -68,6 +84,61 @@ class SynexApiClient private constructor(
     )
 
     suspend fun accounts(): AccountsResponse = authenticatedGet(ApiRoutes.ACCOUNTS)
+
+    suspend fun createOptionsAccount(accountType: String, realMoneyConfirmed: Boolean): JsonElementResponse =
+        authenticatedPost(
+            ApiRoutes.OPTIONS_ACCOUNTS,
+            CreateOptionsAccountRequest(accountType = accountType, realMoneyConfirmed = realMoneyConfirmed),
+        )
+
+    suspend fun resetDemoBalance(loginId: String): JsonElementResponse =
+        authenticatedPost("v1/accounts/$loginId/reset-demo-balance", EmptyRequest)
+
+    suspend fun fundingCapabilities(): FundingCapabilitiesDto = authenticatedGet(ApiRoutes.FUNDING_CAPABILITIES)
+
+    suspend fun wallets(conversionCurrency: String): WalletsResponse = authenticatedGet(ApiRoutes.WALLETS) {
+        conversionCurrency.takeIf(String::isNotBlank)?.let { parameter("conversion_currency", it) }
+    }
+
+    suspend fun walletTransactions(walletType: String, cursor: String? = null): WalletTransactionsResponse =
+        authenticatedGet("v1/wallets/$walletType/transactions") {
+            if (cursor.isNullOrBlank()) parameter("per_page", 100) else parameter("page_cursor", cursor)
+        }
+
+    suspend fun paymentAgentStatistics(): PaymentAgentStatisticsResponse =
+        authenticatedGet(ApiRoutes.PAYMENT_AGENT_STATISTICS)
+
+    suspend fun paymentAgents(currency: String, country: String): PaymentAgentsResponse =
+        authenticatedGet(ApiRoutes.PAYMENT_AGENTS) {
+            parameter("currency", currency)
+            country.takeIf(String::isNotBlank)?.let { parameter("country", it) }
+            parameter("page", 1)
+            parameter("per_page", 100)
+        }
+
+    suspend fun paymentAgent(id: String): PaymentAgentResponse =
+        authenticatedGet("v1/payment-agents/$id")
+
+    suspend fun paymentAgentSettings(): PaymentAgentSettingsResponse =
+        authenticatedGet(ApiRoutes.PAYMENT_AGENT_SETTINGS)
+
+    suspend fun updatePaymentAgentSettings(showRealName: Boolean): PaymentAgentSettingsResponse =
+        authenticatedPatch(ApiRoutes.PAYMENT_AGENT_SETTINGS, UpdatePaymentAgentSettingsRequest(showRealName))
+
+    suspend fun paymentAgentTransfer(request: PaymentAgentTransferRequest): PaymentOperationResponse =
+        authenticatedPost(ApiRoutes.PAYMENT_AGENT_TRANSFERS, request)
+
+    suspend fun paymentAgentTransferStatus(requestId: String): PaymentOperationResponse =
+        authenticatedGet("v1/payment-agents/transfers/$requestId")
+
+    suspend fun requestWithdrawalCode(request: WithdrawalVerificationRequest): WithdrawalVerificationResponse =
+        authenticatedPost(ApiRoutes.PAYMENT_AGENT_WITHDRAWAL_CODE, request)
+
+    suspend fun paymentAgentWithdrawal(request: PaymentAgentWithdrawalRequest): PaymentOperationResponse =
+        authenticatedPost(ApiRoutes.PAYMENT_AGENT_WITHDRAWALS, request)
+
+    suspend fun paymentAgentWithdrawalStatus(requestId: String): PaymentOperationResponse =
+        authenticatedGet("v1/payment-agents/withdrawals/$requestId")
 
     suspend fun symbols(): SymbolsResponse = publicGet(ApiRoutes.SYMBOLS)
 
@@ -236,6 +307,14 @@ class SynexApiClient private constructor(
         }.body()
     }
 
+    private suspend inline fun <reified T, reified B> authenticatedPatch(path: String, body: B): T {
+        val token = tokenProvider.accessToken() ?: throw MissingAccessTokenException()
+        return client.patch(path) {
+            bearerAuth(token)
+            setBody(body)
+        }.body()
+    }
+
     companion object {
         private const val ANDROID_DERIV_RETURN_URL = "synex://deriv-connect"
         private val streamJson = Json { ignoreUnknownKeys = true }
@@ -268,6 +347,9 @@ class SynexApiClient private constructor(
         }
     }
 }
+
+@kotlinx.serialization.Serializable
+private data object EmptyRequest
 
 class MissingAccessTokenException : IllegalStateException(
     "A user access token is required before calling the Synex API.",

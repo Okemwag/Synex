@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +20,8 @@ internal fun AccountPicker(
     accounts: List<TradingAccount>,
     selectedLoginId: String?,
     onSelected: (String) -> Unit,
+    onResetDemo: (String) -> Unit,
+    enabled: Boolean,
 ) {
     SynexCard(Modifier.fillMaxWidth()) {
         Column {
@@ -34,9 +37,19 @@ internal fun AccountPicker(
                     )
                     Column(Modifier.weight(1f)) {
                         Text(account.loginId)
-                        Text(if (account.isVirtual) "Demo account" else "Live account")
+                        Text(if (account.isVirtual) "Practice · ${account.status.ifBlank { "status unknown" }}" else "Real · ${account.status.ifBlank { "status unknown" }}")
+                        Text(
+                            listOfNotNull(
+                                account.accountGroup.takeIf(String::isNotBlank),
+                                account.jurisdiction.takeIf(String::isNotBlank),
+                                if (account.readyForTrading) "Ready" else "Setup required",
+                            ).joinToString(" · "),
+                        )
                     }
-                    Text(account.currency)
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(account.currency)
+                        if (account.isVirtual) TextButton(onClick = { onResetDemo(account.loginId) }, enabled = enabled) { Text("Reset balance") }
+                    }
                 }
             }
         }

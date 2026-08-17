@@ -33,6 +33,20 @@ import com.synex.core.network.dto.ContractActionRequestDto
 import com.synex.core.network.dto.ContractUpdateRequestDto
 import com.synex.core.network.dto.ProposalRequestDto
 import com.synex.core.network.dto.SellRequestDto
+import com.synex.core.network.dto.PaymentAgentTransferRequest
+import com.synex.core.network.dto.PaymentAgentWithdrawalRequest
+import com.synex.core.network.dto.WithdrawalVerificationRequest
+import com.synex.core.model.DerivWallet
+import com.synex.core.model.FundingCapabilities
+import com.synex.core.model.PaymentAgent
+import com.synex.core.model.PaymentAgentDirectory
+import com.synex.core.model.PaymentAgentSettings
+import com.synex.core.model.PaymentOperation
+import com.synex.core.model.WalletBalance
+import com.synex.core.model.WalletTransaction
+import com.synex.core.model.WalletTransactionPage
+import com.synex.core.model.WithdrawalVerification
+import java.net.URLDecoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -117,6 +131,15 @@ class NetworkSynexRepository(
             mutableActiveLoginId.value = accounts.firstOrNull()?.loginId
         }
         return accounts
+    }
+
+    override suspend fun createOptionsAccount(accountType: String, realMoneyConfirmed: Boolean) {
+        require(accountType == "demo" || accountType == "real")
+        api.createOptionsAccount(accountType, realMoneyConfirmed)
+    }
+
+    override suspend fun resetDemoBalance(loginId: String) {
+        api.resetDemoBalance(loginId)
     }
 
     override suspend fun derivConnectUrl(): String =
@@ -270,6 +293,86 @@ class NetworkSynexRepository(
     ): ActivityPage = api.profitTable(requireActiveLoginId(), offset, limit, dateFrom, dateTo, sort)
         .data.toDomain(isProfitTable = true)
 
+    override suspend fun fundingCapabilities(): FundingCapabilities = api.fundingCapabilities().let {
+        FundingCapabilities(it.connected, it.paymentEnabled, it.reconnectRequired)
+    }
+
+    override suspend fun wallets(conversionCurrency: String): List<DerivWallet> = api.wallets(conversionCurrency).data.map { wallet ->
+        DerivWallet(
+            walletId = wallet.walletId,
+            type = wallet.type,
+            balances = wallet.balances.mapValues { (_, value) -> WalletBalance(value.balance, value.input, value.output) },
+            approximateTotal = wallet.totalBalance?.approximateTotalBalance,
+            totalCurrency = wallet.totalBalance?.convertedTo,
+        )
+    }
+
+    override suspend fun walletTransactions(walletType: String, cursor: String?): WalletTransactionPage =
+        api.walletTransactions(walletType, cursor).let { response ->
+            WalletTransactionPage(
+                transactions = response.data.transactions.map { transaction ->
+                    WalletTransaction(
+                        requestId = transaction.requestId,
+                        transactionId = transaction.transactionId,
+                        timestamp = transaction.timestamp,
+                        category = transaction.category,
+                        channel = transaction.channel,
+                        status = transaction.metadata.transactionStatus,
+                        amount = transaction.metadata.transactionNetAmount,
+                        currency = transaction.metadata.transactionCurrency,
+                    )
+                },
+                nextCursor = response.links.next.pageCursor(),
+                previousCursor = response.links.prev.pageCursor(),
+            )
+        }
+
+    override suspend fun paymentAgentDirectory(): PaymentAgentDirectory = api.paymentAgentStatistics().data.let {
+        PaymentAgentDirectory(it.availableCountries, it.availableCurrencies)
+    }
+
+    override suspend fun paymentAgents(currency: String, country: String): List<PaymentAgent> =
+        api.paymentAgents(currency, country).data.map { it.toDomain() }
+
+    override suspend fun ownPaymentAgent(): PaymentAgent? =
+        runCatching { api.paymentAgent("me").data.toDomain() }.getOrNull()?.takeIf { it.id > 0 }
+
+    override suspend fun paymentAgentSettings(): PaymentAgentSettings = api.paymentAgentSettings().data.toDomain()
+
+    override suspend fun updatePaymentAgentSettings(showRealName: Boolean): PaymentAgentSettings =
+        api.updatePaymentAgentSettings(showRealName).data.toDomain()
+
+    override suspend fun paymentAgentTransfer(
+        toNickname: String,
+        amount: String,
+        currency: String,
+        requestId: String,
+        dryRun: Boolean,
+    ): PaymentOperation = api.paymentAgentTransfer(
+        PaymentAgentTransferRequest(toNickname, amount, currency, requestId, dryRun),
+    ).data.let { PaymentOperation(requestId, it.status, it.transactionId) }
+
+    override suspend fun paymentAgentTransferStatus(requestId: String): PaymentOperation =
+        api.paymentAgentTransferStatus(requestId).data.let { PaymentOperation(requestId, it.status, it.transactionId) }
+
+    override suspend fun requestWithdrawalCode(agentId: Long, amount: String, currency: String): WithdrawalVerification =
+        api.requestWithdrawalCode(WithdrawalVerificationRequest(agentId, amount, currency)).data.let {
+            WithdrawalVerification(it.message, it.expiresAt, it.nextRequestAt)
+        }
+
+    override suspend fun paymentAgentWithdrawal(
+        agentId: Long,
+        amount: String,
+        currency: String,
+        verificationCode: String,
+        requestId: String,
+    ): PaymentOperation = api.paymentAgentWithdrawal(
+        PaymentAgentWithdrawalRequest(agentId, amount, currency, verificationCode, requestId),
+    ).data.let { PaymentOperation(requestId, it.status, it.transactionId) }
+
+    override suspend fun paymentAgentWithdrawalStatus(requestId: String): PaymentOperation =
+        api.paymentAgentWithdrawalStatus(requestId).data.let { PaymentOperation(requestId, it.status, it.transactionId) }
+
     private suspend fun activeAccount(): TradingAccount {
         val accounts = accounts()
         return accounts.firstOrNull { it.loginId == mutableActiveLoginId.value }
@@ -297,6 +400,29 @@ class NetworkSynexRepository(
             positions = positions,
         )
     }
+}
+
+private fun com.synex.core.network.dto.PaymentAgentDto.toDomain() = PaymentAgent(
+    id = id,
+    name = name.orEmpty(),
+    nickname = nickname.orEmpty(),
+    information = information.orEmpty(),
+    paymentMethods = paymentMethods.orEmpty(),
+    withdrawalCommission = withdrawalCommission,
+    withdrawalMinimum = withdrawalMinimum,
+    withdrawalMaximum = withdrawalMaximum,
+)
+
+private fun com.synex.core.network.dto.PaymentAgentSettingsDto.toDomain() = PaymentAgentSettings(
+    depositEnabled = depositEnabled,
+    withdrawEnabled = withdrawEnabled,
+    showRealName = showRealName,
+)
+
+private fun String?.pageCursor(): String? {
+    if (this.isNullOrBlank()) return null
+    val encoded = substringAfter("page_cursor=", "").substringBefore('&')
+    return encoded.takeIf(String::isNotBlank)?.let { URLDecoder.decode(it, "UTF-8") }
 }
 
 private fun TradeRequest.toDto() = ProposalRequestDto(

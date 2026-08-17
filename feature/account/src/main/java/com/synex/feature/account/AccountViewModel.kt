@@ -77,6 +77,36 @@ class AccountViewModel(private val repository: SynexRepository) : ViewModel() {
         _state.update { it.copy(selectedLoginId = loginId) }
     }
 
+    fun createOptionsAccount(accountType: String, realMoneyConfirmed: Boolean) {
+        viewModelScope.launch {
+            _state.update { it.copy(isManagingAccount = true, errorMessage = null, connectionMessage = null) }
+            runCatching { repository.createOptionsAccount(accountType, realMoneyConfirmed) }.fold(
+                onSuccess = {
+                    _state.update { it.copy(isManagingAccount = false, connectionMessage = if (accountType == "demo") "Practice Options account created." else "Real Options account created.") }
+                    loadAccounts(afterDerivAuthorization = false)
+                },
+                onFailure = { error ->
+                    _state.update { it.copy(isManagingAccount = false, connectionMessage = error.customerMessage("create the Options account")) }
+                },
+            )
+        }
+    }
+
+    fun resetDemoBalance(loginId: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isManagingAccount = true, errorMessage = null, connectionMessage = null) }
+            runCatching { repository.resetDemoBalance(loginId) }.fold(
+                onSuccess = {
+                    _state.update { it.copy(isManagingAccount = false, connectionMessage = "$loginId's practice balance was reset by Deriv.") }
+                    loadAccounts(afterDerivAuthorization = false)
+                },
+                onFailure = { error ->
+                    _state.update { it.copy(isManagingAccount = false, connectionMessage = error.customerMessage("reset the practice balance")) }
+                },
+            )
+        }
+    }
+
     private fun loadAccounts(afterDerivAuthorization: Boolean) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }

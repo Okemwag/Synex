@@ -5,6 +5,7 @@ import com.synex.core.model.TradingAccount
 data class AccountUiState(
     val isLoading: Boolean = true,
     val isConnecting: Boolean = false,
+    val isManagingAccount: Boolean = false,
     val accounts: List<TradingAccount> = emptyList(),
     val selectedLoginId: String? = null,
     val connectionUrl: String? = null,

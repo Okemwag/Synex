@@ -105,6 +105,7 @@ dependencies {
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:trade"))
     implementation(project(":feature:activity"))
+    implementation(project(":feature:funding"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

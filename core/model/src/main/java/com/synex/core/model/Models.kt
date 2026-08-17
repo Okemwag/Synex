@@ -5,7 +5,73 @@ data class TradingAccount(
     val currency: String,
     val balance: Double,
     val isVirtual: Boolean,
+    val status: String = "",
+    val accountType: String = "",
+    val accountGroup: String = "",
+    val jurisdiction: String = "",
+    val readyForTrading: Boolean = true,
+    val readinessMissing: List<String> = emptyList(),
+    val paymentScope: Boolean = false,
 )
+
+data class FundingCapabilities(
+    val connected: Boolean,
+    val paymentEnabled: Boolean,
+    val reconnectRequired: Boolean,
+)
+
+data class WalletBalance(val balance: String, val input: String, val output: String)
+
+data class DerivWallet(
+    val walletId: String,
+    val type: String,
+    val balances: Map<String, WalletBalance>,
+    val approximateTotal: String?,
+    val totalCurrency: String?,
+)
+
+data class WalletTransaction(
+    val requestId: String,
+    val transactionId: Long,
+    val timestamp: String,
+    val category: String,
+    val channel: String,
+    val status: String,
+    val amount: String,
+    val currency: String,
+)
+
+data class WalletTransactionPage(
+    val transactions: List<WalletTransaction>,
+    val nextCursor: String?,
+    val previousCursor: String?,
+)
+
+data class PaymentAgent(
+    val id: Long,
+    val name: String,
+    val nickname: String,
+    val information: String,
+    val paymentMethods: List<String>,
+    val withdrawalCommission: Double?,
+    val withdrawalMinimum: String?,
+    val withdrawalMaximum: String?,
+)
+
+data class PaymentAgentDirectory(
+    val countries: List<String>,
+    val currencies: List<String>,
+)
+
+data class PaymentAgentSettings(
+    val depositEnabled: Boolean,
+    val withdrawEnabled: Boolean,
+    val showRealName: Boolean,
+)
+
+data class PaymentOperation(val requestId: String, val status: String, val transactionId: Long?)
+
+data class WithdrawalVerification(val message: String, val expiresAt: Long, val nextRequestAt: Long)
 
 data class MarketQuote(
     val symbol: String,
