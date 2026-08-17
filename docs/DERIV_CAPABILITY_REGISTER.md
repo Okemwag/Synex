@@ -47,8 +47,8 @@ Status values are `user-facing`, `operator-facing`, `internal-only`, `intentiona
 | `POST /trading/v1/options/accounts` | user-facing | [account setup](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/account_setup.go) | Web Accounts; Android Account |
 | `POST /trading/v1/options/accounts/{account_id}/reset-demo-balance` | user-facing | [account setup](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/account_setup.go) | Web Accounts; Android Account |
 | `POST /trading/v1/options/accounts/{accountId}/otp` | internal-only | [platform client](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/platform.go) | Authenticated WebSocket bootstrap |
-| `POST /trading/v1/options/contracts/bulk-purchase/real` | pending | Not implemented pending credential decision | Dedicated `bulk_trade_operator` only; never web/Android |
-| `POST /trading/v1/options/contracts/bulk-purchase/demo` | pending | Not implemented pending credential decision | Dedicated `bulk_trade_operator` only; never web/Android |
+| `POST /trading/v1/options/contracts/bulk-purchase/real` | operator-facing | [bulk trading handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/bulk_trading.go) | [Restricted Web Operations](https://github.com/Okemwag/cremia/blob/main/src/pages/operations/BulkTradingPanel.tsx); never Android/customer-facing |
+| `POST /trading/v1/options/contracts/bulk-purchase/demo` | operator-facing | [bulk trading handler](https://github.com/Okemwag/synex-backend/blob/main/internal/api/handlers/bulk_trading.go) | [Restricted Web Operations](https://github.com/Okemwag/cremia/blob/main/src/pages/operations/BulkTradingPanel.tsx); never Android/customer-facing |
 | `GET /trading/v1/options/ws/demo` | internal-only | [platform client](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/platform.go) | Demo account socket bootstrap |
 | `GET /trading/v1/options/ws/real` | internal-only | [platform client](https://github.com/Okemwag/synex-backend/blob/main/internal/deriv/platform.go) | Real account socket bootstrap |
 | `GET /trading/v1/options/ws/public` | internal-only | [market transport](https://github.com/Okemwag/synex-backend/blob/main/internal/marketstream/hub.go) | Public market data |
@@ -77,11 +77,10 @@ Status values are `user-facing`, `operator-facing`, `internal-only`, `intentiona
 |---|---|---|---|
 | Native `auto_*` WebSocket operations | Deriv-native runs can execute repeated purchases outside Synex's durable leases, per-account/session loss accounting, idempotency ledger, emergency kill switch, and immutable execution audit. Synex exposes the same customer workflow through its controlled runner instead. | Product and risk | 2026-11-17 |
 | WebSocket `logout` | Synex uses short-lived OTP WebSockets and closes them after use. Customer disconnect revokes the OAuth grant, which is stronger than logging out one ephemeral socket. | Platform | 2026-11-17 |
-| Demo and real bulk purchase | The official REST payload requires raw per-account Personal Access Tokens rather than Synex OAuth grants. Accepting and transmitting those credentials, plus enabling multi-account real-money execution, requires explicit product-owner authorization. Access is already defined as a dedicated server-side `bulk_trade_operator` role and is not inherited from normal customer or operations-dashboard access. PATs must be request-only, excluded from persistence/logging/errors, and zeroed from in-memory request structures after the provider call. | Product owner | 2026-09-17 |
 
 ## Client parity
 
 - Manual trading, positions, activity, accounts, funding, wallets, payment agents, safe automation, and legacy history are available on both web and Android.
-- Web additionally shows live public ticks, Deriv server time, trading schedules, contract-category counts, and the isolated operator dashboard.
-- Android deliberately has no operator dashboard because application-owner credentials are server-only. Android uses paginated candle history; live public tick streaming remains a web enhancement and is not required for trade or portfolio correctness.
+- Web additionally shows live public ticks, Deriv server time, trading schedules, contract-category counts, and isolated operator dashboards. The `bulk_trade_operator` console holds pasted PATs only in request memory, clears its inputs after submission, and displays credential-free per-account results and audit history.
+- Android deliberately has no operator dashboard because operator credentials and bulk PAT workflows are not customer capabilities. Android uses paginated candle history; live public tick streaming remains a web enhancement and is not required for trade or portfolio correctness.
 - Update this register and the machine-readable manifest in the same change whenever `DERIV_SCHEMA_VERSION` changes. Unsupported entries require an owner, reason, and future review date.

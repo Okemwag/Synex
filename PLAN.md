@@ -219,15 +219,15 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Bulk purchase
 
-Implementation note (2026-08-17): the current Deriv REST endpoints require raw per-account Personal Access Tokens and explicitly reject the OAuth grants used by Synex. The transport must remain operator-only and is pending explicit product-owner authorization to accept and transmit those credentials.
+Implementation note (2026-08-17): the product owner authorized request-memory-only handling of raw per-account Deriv Personal Access Tokens. The implementation uses a separate `bulk_trade_operator` credential, sends PATs only to Deriv, never persists or logs them, stores only allowlisted credential-free results, and keeps this workflow out of customer web and Android surfaces.
 
-- [ ] Implement demo bulk contract purchase.
-- [ ] Implement real bulk contract purchase.
+- [x] Implement demo bulk contract purchase.
+- [x] Implement real bulk contract purchase.
 - [x] Define which user or operator roles may use bulk purchase. Bulk purchase is restricted to a dedicated `bulk_trade_operator` server-side role; it is never a customer web/Android capability and is not implied by general operations-dashboard access.
-- [ ] Validate every proposal and account before submission.
-- [ ] Add idempotency and partial-failure handling.
-- [ ] Display per-contract success/failure results.
-- [ ] Add audit logs and real-money confirmation controls.
+- [x] Validate every proposal and account before submission. Synex validates contract and pair structure, rejects duplicate accounts, and Deriv validates each PAT/account ownership and environment pair while processing the batch.
+- [x] Add idempotency and partial-failure handling.
+- [x] Display per-contract success/failure results in the restricted web operator console.
+- [x] Add credential-free audit logs and exact-phrase real-money confirmation controls.
 
 ## Phase 4 — Migration, system, and operator capabilities
 
@@ -291,7 +291,7 @@ Synex can claim full current Deriv API coverage only when all of the following a
 - [x] Every current REST and WebSocket operation is accounted for in the capability register.
 - [x] Every internal transport operation is implemented and monitored.
 - [x] Every user-facing operation has a complete backend workflow and at least one supported client experience.
-- [ ] Every operator operation has role enforcement and isolated credentials.
+- [x] Every operator operation has role enforcement and isolated credentials.
 - [x] All available option contract families can be correctly configured, proposed, purchased, monitored, and settled.
 - [x] Real-money workflows use explicit confirmation, limits, audit logs, idempotency, and recovery.
 - [x] Web and Android parity is documented, including every intentional difference.
