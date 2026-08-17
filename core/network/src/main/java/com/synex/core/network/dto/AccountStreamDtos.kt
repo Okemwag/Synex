@@ -21,6 +21,19 @@ data class AccountStreamEventDto(
     @SerialName("login_id") val loginId: String = "",
     val balance: AccountBalanceEventDto? = null,
     val position: AccountPositionEventDto? = null,
+    val transaction: AccountTransactionEventDto? = null,
+)
+
+@Serializable
+data class AccountTransactionEventDto(
+    val action: String = "",
+    val amount: Double = 0.0,
+    val balance: Double = 0.0,
+    @SerialName("contract_id") val contractId: Long? = null,
+    val currency: String = "",
+    @SerialName("transaction_id") val transactionId: Long = 0,
+    val time: Long = 0,
+    val symbol: String = "",
 )
 
 @Serializable

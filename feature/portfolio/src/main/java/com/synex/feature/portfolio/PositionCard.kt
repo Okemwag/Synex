@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.CallMade
 import androidx.compose.material.icons.automirrored.outlined.CallReceived
@@ -27,9 +28,9 @@ import com.synex.core.ui.SynexRed
 import com.synex.core.ui.formatMoney
 
 @Composable
-internal fun PositionCard(position: Position) {
+internal fun PositionCard(position: Position, onClick: () -> Unit) {
     val directionColor = if (position.direction == PositionDirection.UP) SynexGreen else SynexRed
-    SynexCard(Modifier.fillMaxWidth()) {
+    SynexCard(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(
             Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,

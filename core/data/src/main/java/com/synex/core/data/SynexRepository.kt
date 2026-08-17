@@ -9,6 +9,13 @@ import com.synex.core.model.PortfolioSummary
 import com.synex.core.model.TradingAccount
 import com.synex.core.model.OnboardingStatus
 import kotlinx.coroutines.flow.StateFlow
+import com.synex.core.model.ActivityPage
+import com.synex.core.model.ContractOption
+import com.synex.core.model.ContractUpdateEvent
+import com.synex.core.model.PositionStatus
+import com.synex.core.model.TradeProposal
+import com.synex.core.model.TradeReceipt
+import com.synex.core.model.TradeRequest
 
 interface SynexRepository {
     val activeLoginId: StateFlow<String?>
@@ -23,8 +30,22 @@ interface SynexRepository {
     suspend fun onboardingStatus(): OnboardingStatus
     suspend fun acknowledgeRisk(disclosureVersion: String)
     fun selectAccount(loginId: String)
+    suspend fun contracts(symbol: String): List<ContractOption>
+    suspend fun proposal(request: TradeRequest): TradeProposal
+    suspend fun buy(request: TradeRequest, proposal: TradeProposal, realMoneyConfirmed: Boolean, instructionKey: String): TradeReceipt
+    suspend fun position(contractId: Long): PositionStatus
+    suspend fun sell(contractId: Long)
+    suspend fun cancel(contractId: Long)
+    suspend fun updateContract(contractId: Long, stopLoss: Double?, takeProfit: Double?)
+    suspend fun contractUpdateHistory(contractId: Long): List<ContractUpdateEvent>
+    suspend fun statement(offset: Int, limit: Int, dateFrom: Long?, dateTo: Long?, actionType: String?): ActivityPage
+    suspend fun profitTable(offset: Int, limit: Int, dateFrom: String?, dateTo: String?, sort: String): ActivityPage
 }
 
 class DerivAccountRequiredException : IllegalStateException(
     "No Deriv trading account is linked to this Synex profile.",
+)
+
+class TradeStatusPendingException : IllegalStateException(
+    "This order is still being checked with Deriv. Do not place another trade on this account until it is resolved.",
 )

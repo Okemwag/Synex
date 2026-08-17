@@ -103,6 +103,8 @@ dependencies {
     implementation(project(":feature:legal"))
     implementation(project(":feature:auth"))
     implementation(project(":feature:onboarding"))
+    implementation(project(":feature:trade"))
+    implementation(project(":feature:activity"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

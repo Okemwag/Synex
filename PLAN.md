@@ -146,13 +146,13 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Android manual-trading parity
 
-- [ ] Add a Trade destination.
-- [ ] Add contract discovery and contract-specific ticket forms.
-- [ ] Add proposal pricing and expiry handling.
-- [ ] Add demo and real purchase confirmation.
-- [ ] Add live open-position monitoring.
-- [ ] Add sell, cancel, update, and update-history actions.
-- [ ] Add activity, statement, and profit-table screens.
+- [x] Add a Trade destination.
+- [x] Add contract discovery and contract-specific ticket forms.
+- [x] Add proposal pricing and expiry handling.
+- [x] Add demo and real purchase confirmation.
+- [x] Add live open-position monitoring.
+- [x] Add sell, cancel, update, and update-history actions.
+- [x] Add activity, statement, and profit-table screens.
 
 ## Phase 2 — Accounts, wallets, and funding
 

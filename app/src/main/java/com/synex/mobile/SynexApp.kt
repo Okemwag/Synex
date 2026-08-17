@@ -35,6 +35,9 @@ import com.synex.feature.legal.LegalRoute
 import com.synex.feature.legal.LegalDocumentRoute
 import com.synex.feature.overview.OverviewRoute
 import com.synex.feature.portfolio.PortfolioRoute
+import com.synex.feature.trade.TradeRoute
+import com.synex.feature.trade.PositionDetailRoute
+import com.synex.feature.activity.ActivityRoute
 import com.synex.mobile.navigation.SynexBottomBar
 import com.synex.mobile.navigation.AppRoutes
 import com.synex.mobile.navigation.SynexDestination
@@ -78,10 +81,16 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
                     )
                 }
                 composable(SynexDestination.MARKETS.route) { MarketsRoute(repository) }
+                composable(SynexDestination.TRADE.route) {
+                    TradeRoute(repository, onAccount = { navController.navigate(SynexDestination.ACCOUNT.route) })
+                }
                 composable(SynexDestination.PORTFOLIO.route) {
                     PortfolioRoute(repository, onAccount = {
                         navController.navigate(SynexDestination.ACCOUNT.route)
-                    })
+                    }, onPosition = { navController.navigate(AppRoutes.position(it)) })
+                }
+                composable(SynexDestination.ACTIVITY.route) {
+                    ActivityRoute(repository, onAccount = { navController.navigate(SynexDestination.ACCOUNT.route) })
                 }
                 composable(SynexDestination.ACCOUNT.route) {
                     AccountRoute(
@@ -102,6 +111,16 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
                 ) { entry ->
                     LegalDocumentRoute(
                         documentType = entry.arguments?.getString("documentType").orEmpty(),
+                        onBack = { navController.popBackStack() },
+                    )
+                }
+                composable(
+                    AppRoutes.POSITION,
+                    arguments = listOf(navArgument("contractId") { type = NavType.LongType }),
+                ) { entry ->
+                    PositionDetailRoute(
+                        repository = repository,
+                        contractId = entry.arguments?.getLong("contractId") ?: 0L,
                         onBack = { navController.popBackStack() },
                     )
                 }

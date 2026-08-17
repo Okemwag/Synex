@@ -25,11 +25,12 @@ import com.synex.core.ui.SynexPaper
 fun PortfolioRoute(
     repository: SynexRepository,
     onAccount: () -> Unit,
+    onPosition: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PortfolioViewModel = viewModel(factory = PortfolioViewModel.factory(repository)),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    PortfolioScreen(state, viewModel::refresh, onAccount, modifier)
+    PortfolioScreen(state, viewModel::refresh, onAccount, onPosition, modifier)
 }
 
 @Composable
@@ -37,6 +38,7 @@ fun PortfolioScreen(
     state: PortfolioUiState,
     onRetry: () -> Unit,
     onAccount: () -> Unit,
+    onPosition: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -56,7 +58,7 @@ fun PortfolioScreen(
                 )
             }
             state.errorMessage != null -> item { ErrorState(state.errorMessage, onRetry) }
-            state.portfolio != null -> portfolioContent(state.portfolio, state.liveStatus)
+            state.portfolio != null -> portfolioContent(state.portfolio, state.liveStatus, onPosition)
         }
     }
 }
@@ -64,6 +66,7 @@ fun PortfolioScreen(
 private fun androidx.compose.foundation.lazy.LazyListScope.portfolioContent(
     portfolio: PortfolioSummary,
     liveStatus: String,
+    onPosition: (Long) -> Unit,
 ) {
     item { PortfolioSummaryCard(portfolio) }
     item {
@@ -72,7 +75,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.portfolioContent(
             "${portfolio.positions.size} active · ${liveStatus.liveLabel()}",
         )
     }
-    items(portfolio.positions, key = { it.contractId }) { PositionCard(it) }
+    items(portfolio.positions, key = { it.contractId }) { position -> PositionCard(position) { onPosition(position.contractId) } }
 }
 
 private fun String.liveLabel() = when (this) {

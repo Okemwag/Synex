@@ -32,4 +32,6 @@ include(":feature:account")
 include(":feature:legal")
 include(":feature:auth")
 include(":feature:onboarding")
+include(":feature:trade")
+include(":feature:activity")
  

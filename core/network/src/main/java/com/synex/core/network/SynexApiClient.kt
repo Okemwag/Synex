@@ -6,16 +6,20 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.prepareGet
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import com.synex.core.network.dto.AccountsResponse
 import com.synex.core.network.dto.CandlesResponse
@@ -28,6 +32,19 @@ import com.synex.core.network.dto.RiskAcknowledgementResponse
 import com.synex.core.network.dto.AccountStreamEventDto
 import com.synex.core.network.dto.AccountStreamTicketRequest
 import com.synex.core.network.dto.AccountStreamTicketResponse
+import com.synex.core.network.dto.ActivityResponse
+import com.synex.core.network.dto.BuyRequestDto
+import com.synex.core.network.dto.ContractActionRequestDto
+import com.synex.core.network.dto.ContractsResponse
+import com.synex.core.network.dto.ContractUpdateRequestDto
+import com.synex.core.network.dto.JsonDataResponse
+import com.synex.core.network.dto.JsonRowsResponse
+import com.synex.core.network.dto.PositionResponse
+import com.synex.core.network.dto.OrderStatusResponse
+import com.synex.core.network.dto.ProposalRequestDto
+import com.synex.core.network.dto.ProposalResponse
+import com.synex.core.network.dto.ReceiptResponse
+import com.synex.core.network.dto.SellRequestDto
 import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.CancellationException
@@ -37,6 +54,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 
 class SynexApiClient private constructor(
     private val tokenProvider: AccessTokenProvider,
@@ -115,6 +135,80 @@ class SynexApiClient private constructor(
             ),
         )
 
+    suspend fun contracts(symbol: String): ContractsResponse = publicGet(ApiRoutes.CONTRACTS) {
+        parameter("symbol", symbol)
+    }
+
+    suspend fun proposal(request: ProposalRequestDto): ProposalResponse =
+        authenticatedPost(ApiRoutes.PROPOSAL, request)
+
+    suspend fun buy(request: BuyRequestDto, instructionKey: String): JsonDataResponse {
+        val token = tokenProvider.accessToken() ?: throw MissingAccessTokenException()
+        return client.post(ApiRoutes.BUY) {
+            bearerAuth(token)
+            header("Idempotency-Key", instructionKey)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun receipt(instructionKey: String): ReceiptResponse = authenticatedGet(ApiRoutes.RECEIPT) {
+        parameter("idempotency_key", instructionKey)
+    }
+
+    suspend fun orderStatus(instructionKey: String): OrderStatusResponse = authenticatedGet(ApiRoutes.ORDER_STATUS) {
+        parameter("idempotency_key", instructionKey)
+    }
+
+    suspend fun position(loginId: String, contractId: Long): PositionResponse = authenticatedGet(ApiRoutes.POSITION) {
+        parameter("login_id", loginId)
+        parameter("contract_id", contractId)
+    }
+
+    suspend fun sell(request: SellRequestDto): JsonDataResponse = authenticatedPost(ApiRoutes.SELL, request)
+
+    suspend fun cancel(request: ContractActionRequestDto): JsonDataResponse = authenticatedPost(ApiRoutes.CANCEL, request)
+
+    suspend fun updateContract(request: ContractUpdateRequestDto): JsonDataResponse =
+        authenticatedPost(ApiRoutes.CONTRACT_UPDATE, request)
+
+    suspend fun contractUpdateHistory(loginId: String, contractId: Long): JsonRowsResponse =
+        authenticatedGet(ApiRoutes.CONTRACT_UPDATE_HISTORY) {
+            parameter("login_id", loginId)
+            parameter("contract_id", contractId)
+        }
+
+    suspend fun statement(
+        loginId: String,
+        offset: Int,
+        limit: Int,
+        dateFrom: Long?,
+        dateTo: Long?,
+        actionType: String?,
+    ): ActivityResponse = authenticatedGet(ApiRoutes.STATEMENT) {
+        parameter("login_id", loginId)
+        parameter("offset", offset)
+        parameter("limit", limit)
+        dateFrom?.let { parameter("date_from", it) }
+        dateTo?.let { parameter("date_to", it) }
+        actionType?.takeIf(String::isNotBlank)?.let { parameter("action_type", it) }
+    }
+
+    suspend fun profitTable(
+        loginId: String,
+        offset: Int,
+        limit: Int,
+        dateFrom: String?,
+        dateTo: String?,
+        sort: String,
+    ): ActivityResponse = authenticatedGet(ApiRoutes.PROFIT_TABLE) {
+        parameter("login_id", loginId)
+        parameter("offset", offset)
+        parameter("limit", limit)
+        dateFrom?.takeIf(String::isNotBlank)?.let { parameter("date_from", it) }
+        dateTo?.takeIf(String::isNotBlank)?.let { parameter("date_to", it) }
+        parameter("sort", sort)
+    }
+
     fun close() = client.close()
 
     private suspend inline fun <reified T> authenticatedGet(
@@ -147,7 +241,18 @@ class SynexApiClient private constructor(
         private val streamJson = Json { ignoreUnknownKeys = true }
 
         private fun defaultHttpClient(baseUrl: String): HttpClient = HttpClient(OkHttp) {
-            expectSuccess = true
+            expectSuccess = false
+            HttpResponseValidator {
+                validateResponse { response ->
+                    if (!response.status.isSuccess()) {
+                        val payload = runCatching { streamJson.parseToJsonElement(response.bodyAsText()).jsonObject }.getOrNull()
+                        val code = payload?.get("code")?.jsonPrimitive?.contentOrNull.orEmpty()
+                        val message = payload?.get("message")?.jsonPrimitive?.contentOrNull
+                            ?: "The request was not accepted."
+                        throw SynexApiException(code, message)
+                    }
+                }
+            }
             install(ContentNegotiation) {
                 json(Json {
                     ignoreUnknownKeys = true
@@ -167,3 +272,5 @@ class SynexApiClient private constructor(
 class MissingAccessTokenException : IllegalStateException(
     "A user access token is required before calling the Synex API.",
 )
+
+class SynexApiException(val code: String, override val message: String) : IllegalStateException(message)
