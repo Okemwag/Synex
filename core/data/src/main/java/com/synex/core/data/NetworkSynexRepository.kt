@@ -49,10 +49,12 @@ import com.synex.core.model.WithdrawalVerification
 import com.synex.core.model.AutomationRun
 import com.synex.core.model.AutomationStrategy
 import com.synex.core.model.AutomationStrategyDraft
+import com.synex.core.model.LegacyAccountSummary
 import com.synex.core.network.dto.CreateAutomationStrategyRequest
 import com.synex.core.network.dto.StartAutomationRequest
 import java.net.URLDecoder
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -414,6 +416,35 @@ class NetworkSynexRepository(
     override suspend fun automationKillSwitchEnabled(): Boolean = api.automationSafety().killSwitchEnabled
 
     override suspend fun setAutomationKillSwitch(enabled: Boolean): Boolean = api.setAutomationKillSwitch(enabled).killSwitchEnabled
+
+    override suspend fun accountNickname(): String =
+        (api.accountNickname().data as? JsonObject)?.text("nickname").orEmpty()
+
+    override suspend fun legacyAccountSummary(): LegacyAccountSummary {
+        val statusData = api.legacyMigrationStatus().data as? JsonObject
+        val accountData = runCatching { api.legacyAccounts().data as? JsonObject }.getOrNull()
+        val loginIds = (accountData?.get("loginids") as? JsonObject)?.keys.orEmpty().filter { it.matches(Regex("^[A-Z]+[0-9]+$")) }.sorted()
+        return LegacyAccountSummary(statusData?.text("status", "migration_status").orEmpty().ifBlank { "unknown" }, loginIds)
+    }
+
+    override suspend fun legacyStatement(
+        loginId: String,
+        offset: Int,
+        limit: Int,
+        dateFrom: Long?,
+        dateTo: Long?,
+        actionType: String?,
+    ): ActivityPage {
+        val data = api.legacyStatement(loginId, offset, limit, dateFrom, dateTo, actionType).data as? JsonObject ?: JsonObject(emptyMap())
+        val statement = data["statement"] as? JsonObject ?: data
+        val transactions = (statement["transactions"] as? JsonArray)?.mapNotNull { it as? JsonObject }.orEmpty()
+        val count = statement.text("count").toIntOrNull() ?: transactions.size
+        return com.synex.core.network.dto.ActivityDataDto(transactions, count).toDomain(isProfitTable = false)
+    }
+
+    override suspend fun derivSystemStatus(): String {
+        return api.systemStatus().text("status").ifBlank { "unknown" }
+    }
 
     private suspend fun activeAccount(): TradingAccount {
         val accounts = accounts()

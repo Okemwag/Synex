@@ -35,6 +35,11 @@ internal object ApiRoutes {
     const val AUTOMATION_RUNS = "v1/automation/runs"
     const val AUTOMATION_SAFETY = "v1/automation/safety"
     const val AUTOMATION_KILL_SWITCH = "v1/automation/kill-switch"
+    const val ACCOUNT_NICKNAME = "v1/accounts/nickname"
+    const val LEGACY_MIGRATION_STATUS = "v1/legacy/migration-status"
+    const val LEGACY_ACCOUNTS = "v1/legacy/accounts"
+    const val LEGACY_STATEMENT = "v1/legacy/statement"
+    const val SYSTEM_STATUS = "v1/system/status"
 }
 
 internal object ApiDefaults {

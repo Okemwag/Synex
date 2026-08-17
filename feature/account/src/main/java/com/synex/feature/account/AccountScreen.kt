@@ -41,6 +41,7 @@ fun AccountRoute(
     onLegalClick: () -> Unit,
     onFundingClick: () -> Unit,
     onAutomationClick: () -> Unit,
+    onLegacyHistoryClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AccountViewModel = viewModel(factory = AccountViewModel.factory(repository)),
 ) {
@@ -76,6 +77,7 @@ fun AccountRoute(
         viewModel::resetDemoBalance,
         onFundingClick,
         onAutomationClick,
+        onLegacyHistoryClick,
         modifier,
     )
 }
@@ -92,6 +94,7 @@ fun AccountScreen(
     onResetDemo: (String) -> Unit,
     onFundingClick: () -> Unit,
     onAutomationClick: () -> Unit,
+    onLegacyHistoryClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var confirmRealCreation by remember { mutableStateOf(false) }
@@ -132,6 +135,7 @@ fun AccountScreen(
                     )
                 }
                 if (state.accounts.isNotEmpty()) {
+                    if (state.derivNickname.isNotBlank()) item { com.synex.core.ui.SynexCard { Text("Deriv nickname: ${state.derivNickname}", Modifier.padding(18.dp)) } }
                     item { SectionHeading("Trading account", "Choose the account shown across Synex") }
                     item { AccountPicker(state.accounts, selected?.loginId, onAccountSelected, { resetLoginId = it }, !state.isManagingAccount) }
                     item {
@@ -156,6 +160,14 @@ fun AccountScreen(
                             "Review Deriv wallet balances and transactions, or make a verified payment-agent withdrawal.",
                             "Open funding",
                             onFundingClick,
+                        )
+                    }
+                    item {
+                        com.synex.core.ui.ActionState(
+                            "Legacy Deriv history",
+                            "Read pre-upgrade account mappings and transaction statements. This temporary feature is read-only.",
+                            "Open legacy history",
+                            onLegacyHistoryClick,
                         )
                     }
                     item {

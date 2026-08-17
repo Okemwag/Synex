@@ -8,6 +8,7 @@ data class AccountUiState(
     val isManagingAccount: Boolean = false,
     val accounts: List<TradingAccount> = emptyList(),
     val selectedLoginId: String? = null,
+    val derivNickname: String = "",
     val connectionUrl: String? = null,
     val waitingForConnection: Boolean = false,
     val connectionMessage: String? = null,

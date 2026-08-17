@@ -36,4 +36,5 @@ include(":feature:trade")
 include(":feature:activity")
 include(":feature:funding")
 include(":feature:automation")
+include(":feature:legacy")
  

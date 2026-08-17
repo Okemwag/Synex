@@ -121,6 +121,11 @@ data class AutomationStrategyDraft(
     val maxConcurrentPositions: Int,
 )
 
+data class LegacyAccountSummary(
+    val migrationStatus: String,
+    val loginIds: List<String>,
+)
+
 data class MarketQuote(
     val symbol: String,
     val displayName: String,

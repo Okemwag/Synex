@@ -107,6 +107,7 @@ dependencies {
     implementation(project(":feature:activity"))
     implementation(project(":feature:funding"))
     implementation(project(":feature:automation"))
+    implementation(project(":feature:legacy"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

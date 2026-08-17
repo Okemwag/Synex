@@ -233,11 +233,11 @@ Implementation note (2026-08-17): the current Deriv REST endpoints require raw p
 
 ### Legacy options migration
 
-- [ ] Implement legacy migration status.
-- [ ] Implement legacy account listing.
-- [ ] Implement legacy statement retrieval.
-- [ ] Explain the temporary/legacy nature of these endpoints in the UI.
-- [ ] Remove the feature cleanly when Deriv retires the APIs.
+- [x] Implement legacy migration status.
+- [x] Implement legacy account listing.
+- [x] Implement legacy statement retrieval.
+- [x] Explain the temporary/legacy nature of these endpoints in the UI.
+- [x] Remove the feature cleanly when Deriv retires the APIs. The backend handler and the isolated web/Android legacy screens can be removed without affecting current account activity.
 
 ### System operations
 
@@ -245,17 +245,17 @@ Implementation note (2026-08-17): the current Deriv REST endpoints require raw p
 - [x] Keep `forget` and `forget_all` operating as internal subscription cleanup.
 - [x] Implement server time.
 - [x] Implement trading times.
-- [ ] Implement Deriv REST health monitoring.
-- [ ] Surface relevant upstream outages without leaking internal details.
-- [ ] Add operational alerts for repeated Deriv connection and schema errors.
+- [x] Implement Deriv REST health monitoring.
+- [x] Surface relevant upstream outages without leaking internal details.
+- [x] Add operational alerts for repeated Deriv connection and schema errors.
 
 ### Account and application operations
 
-- [ ] Implement account nickname retrieval.
-- [ ] Implement application markup statistics.
-- [ ] Use a separate application-owner credential for `application_read` operations.
-- [ ] Never expose operator credentials to web or Android clients.
-- [ ] Add an authorized operator dashboard for application statistics.
+- [x] Implement account nickname retrieval.
+- [x] Implement application markup statistics.
+- [x] Use a separate application-owner credential for `application_read` operations. Deployment uses the server-only `DERIV_APPLICATION_READ_TOKEN`.
+- [x] Never expose operator credentials to web or Android clients.
+- [x] Add an authorized operator dashboard for application statistics. `/operations` accepts the separate Synex operations key; the Deriv owner credential remains backend-only.
 
 ## Phase 5 — Schema maintenance and release discipline
 

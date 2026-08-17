@@ -169,6 +169,30 @@ class SynexApiClient private constructor(
     suspend fun setAutomationKillSwitch(enabled: Boolean): AutomationSafetyDto =
         authenticatedPost(ApiRoutes.AUTOMATION_KILL_SWITCH, SetAutomationSafetyRequest(enabled))
 
+    suspend fun accountNickname(): JsonElementResponse = authenticatedGet(ApiRoutes.ACCOUNT_NICKNAME)
+
+    suspend fun legacyMigrationStatus(): JsonElementResponse = authenticatedGet(ApiRoutes.LEGACY_MIGRATION_STATUS)
+
+    suspend fun legacyAccounts(): JsonElementResponse = authenticatedGet(ApiRoutes.LEGACY_ACCOUNTS)
+
+    suspend fun legacyStatement(
+        loginId: String,
+        offset: Int,
+        limit: Int,
+        dateFrom: Long?,
+        dateTo: Long?,
+        actionType: String?,
+    ): JsonElementResponse = authenticatedGet(ApiRoutes.LEGACY_STATEMENT) {
+        parameter("loginid", loginId)
+        parameter("offset", offset)
+        parameter("limit", limit)
+        dateFrom?.let { parameter("date_from", it) }
+        dateTo?.let { parameter("date_to", it) }
+        actionType?.takeIf(String::isNotBlank)?.let { parameter("action_type", it) }
+    }
+
+    suspend fun systemStatus(): kotlinx.serialization.json.JsonObject = publicGet(ApiRoutes.SYSTEM_STATUS)
+
     suspend fun symbols(): SymbolsResponse = publicGet(ApiRoutes.SYMBOLS)
 
     suspend fun candles(

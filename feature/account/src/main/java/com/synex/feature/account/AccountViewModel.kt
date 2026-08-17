@@ -112,11 +112,13 @@ class AccountViewModel(private val repository: SynexRepository) : ViewModel() {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
             runCatching { repository.accounts() }.fold(
                 onSuccess = { accounts ->
+					val nickname = if (accounts.isEmpty()) "" else runCatching { repository.accountNickname() }.getOrDefault("")
                     _state.update {
                         it.copy(
                             isLoading = false,
                             accounts = accounts,
                             selectedLoginId = repository.activeLoginId.value,
+							derivNickname = nickname,
                             waitingForConnection = afterDerivAuthorization && accounts.isEmpty(),
                             connectionMessage = when {
                                 !afterDerivAuthorization -> it.connectionMessage

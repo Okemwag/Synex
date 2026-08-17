@@ -2,6 +2,7 @@ package com.synex.mobile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +11,13 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,6 +36,7 @@ import androidx.compose.animation.slideOutHorizontally
 import com.synex.core.data.SynexRepository
 import com.synex.core.ui.SynexPaper
 import com.synex.core.ui.SynexWordmark
+import com.synex.core.ui.SynexRed
 import com.synex.feature.account.AccountRoute
 import com.synex.feature.markets.MarketsRoute
 import com.synex.feature.legal.LegalRoute
@@ -40,19 +48,28 @@ import com.synex.feature.trade.PositionDetailRoute
 import com.synex.feature.activity.ActivityRoute
 import com.synex.feature.funding.FundingRoute
 import com.synex.feature.automation.AutomationRoute
+import com.synex.feature.legacy.LegacyRoute
 import com.synex.mobile.navigation.SynexBottomBar
 import com.synex.mobile.navigation.AppRoutes
 import com.synex.mobile.navigation.SynexDestination
+import kotlinx.coroutines.delay
 
 @Composable
 fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    var derivUnavailable by remember { mutableStateOf(false) }
+    LaunchedEffect(repository) {
+        while (true) {
+            derivUnavailable = runCatching { repository.derivSystemStatus() == "unavailable" }.getOrDefault(false)
+            delay(60_000)
+        }
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = SynexPaper,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { SynexTopBar() },
+        topBar = { Column { SynexTopBar(); if (derivUnavailable) Surface(color = androidx.compose.ui.graphics.Color(0xFFFFF3E0)) { Text("Deriv is temporarily unavailable. Market data and account actions may be delayed.", Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), color = SynexRed) } } },
         bottomBar = {
             if (currentRoute?.startsWith("legal") != true) {
                 SynexBottomBar(currentRoute) { destination ->
@@ -101,6 +118,7 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
                         onAuthenticationAction = onSignOut,
                         onFundingClick = { navController.navigate(AppRoutes.FUNDING) },
                         onAutomationClick = { navController.navigate(AppRoutes.AUTOMATION) },
+                        onLegacyHistoryClick = { navController.navigate(AppRoutes.LEGACY_HISTORY) },
                     )
                 }
                 composable(AppRoutes.FUNDING) {
@@ -115,6 +133,7 @@ fun SynexApp(repository: SynexRepository, onSignOut: () -> Unit) {
                         onAccount = { navController.navigate(SynexDestination.ACCOUNT.route) },
                     )
                 }
+                composable(AppRoutes.LEGACY_HISTORY) { LegacyRoute(repository) }
                 composable(AppRoutes.LEGAL) {
                     LegalRoute(
                         onBack = { navController.popBackStack() },

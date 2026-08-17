@@ -27,6 +27,7 @@ import com.synex.core.model.WithdrawalVerification
 import com.synex.core.model.AutomationRun
 import com.synex.core.model.AutomationStrategy
 import com.synex.core.model.AutomationStrategyDraft
+import com.synex.core.model.LegacyAccountSummary
 
 interface SynexRepository {
     val activeLoginId: StateFlow<String?>
@@ -73,6 +74,10 @@ interface SynexRepository {
     suspend fun transitionAutomation(runId: String, action: String): AutomationRun = unsupportedFunding()
     suspend fun automationKillSwitchEnabled(): Boolean = unsupportedFunding()
     suspend fun setAutomationKillSwitch(enabled: Boolean): Boolean = unsupportedFunding()
+    suspend fun accountNickname(): String = unsupportedFunding()
+    suspend fun legacyAccountSummary(): LegacyAccountSummary = unsupportedFunding()
+    suspend fun legacyStatement(loginId: String, offset: Int, limit: Int, dateFrom: Long?, dateTo: Long?, actionType: String?): ActivityPage = unsupportedFunding()
+    suspend fun derivSystemStatus(): String = unsupportedFunding()
 }
 
 private fun <T> unsupportedFunding(): T = throw UnsupportedOperationException("This repository does not implement account and funding operations.")
