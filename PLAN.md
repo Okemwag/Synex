@@ -135,14 +135,14 @@ Progress update (2026-07-17): implementation is underway. Manual web and Android
 
 ### Activity and reporting
 
-- [ ] Add statement date-range filters.
-- [ ] Add statement action/type filters.
-- [ ] Add offset-based pagination.
-- [ ] Add sorting.
-- [ ] Add profit-table filters and pagination.
-- [ ] Show complete transaction details.
-- [ ] Reconcile live transaction events with statement and profit-table history.
-- [ ] Add CSV or equivalent activity export.
+- [x] Add statement date-range filters.
+- [x] Add statement action/type filters.
+- [x] Add offset-based pagination.
+- [x] Add sorting.
+- [x] Add profit-table filters and pagination.
+- [x] Show complete transaction details.
+- [x] Reconcile live transaction events by refreshing statement/profit-table history when the authenticated account stream reports a new transaction.
+- [x] Add CSV or equivalent activity export.
 
 ### Android manual-trading parity
 
